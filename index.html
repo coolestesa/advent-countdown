@@ -5,9 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Chia's Countdown Calendar</title>
 <meta name="theme-color" content="#070b1c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chia's Calendar">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Noto+Serif+TC:wght@400;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Noto+Serif+TC:wght@400;600&family=Playfair+Display:ital,wght@1,800;1,900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;background:#070b1c}
@@ -22,8 +27,8 @@ body{font-family:'Cormorant Garamond','Noto Serif TC',Georgia,serif;color:#fff;
   text-shadow:0 1px 12px rgba(5,10,40,.55),0 0 2px rgba(5,10,40,.35)}
 #title .sub{font-size:11px;letter-spacing:.46em;font-weight:600;opacity:.92;padding-left:.46em}
 #title h1{font-style:italic;font-weight:500;font-size:clamp(24px,7.3vw,46px);line-height:1.1;color:#f1d89b;margin-top:4px;white-space:nowrap}
-#status{position:fixed;z-index:9;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 3vh);
-  font-family:'Noto Serif TC',serif;font-size:13px;letter-spacing:.08em;white-space:nowrap;padding:8px 18px;border-radius:999px;
+#status{position:fixed;z-index:9;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 3.6vh + clamp(56px,13.5vw,84px));
+  font-family:'Noto Serif TC',serif;font-size:12px;letter-spacing:.08em;white-space:nowrap;padding:5px 14px;border-radius:999px;
   background:rgba(12,16,40,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(241,216,155,.35);color:#f8efd8}
 #toast{position:fixed;z-index:10;left:50%;bottom:calc(env(safe-area-inset-bottom) + 3vh + 48px);transform:translate(-50%,10px);
   font-family:'Noto Serif TC',serif;font-size:13px;padding:8px 14px;border-radius:6px;background:#fbf6ea;color:#3a2e22;
@@ -48,6 +53,7 @@ body{font-family:'Cormorant Garamond','Noto Serif TC',Georgia,serif;color:#fff;
 #preview input{flex:1;accent-color:#f1d89b}
 #preview button{font:inherit;color:#fff;background:rgba(255,255,255,.15);border:0;border-radius:6px;padding:5px 8px}
 body.has-preview #title{top:calc(env(safe-area-inset-top) + 52px)}
+body.has-preview #status{top:calc(env(safe-area-inset-top) + 52px + clamp(56px,13.5vw,84px))}
 #nogl{position:fixed;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;font-family:'Noto Serif TC',serif;z-index:20;background:#0b1030}
 </style>
 </head>
@@ -66,7 +72,7 @@ body.has-preview #title{top:calc(env(safe-area-inset-top) + 52px)}
 <script>
 /* =========================================================
    ✏️ 在这里改内容：一共 7 天（12/25 – 12/31），每天一份礼物
-   她每天可以挑任意一扇窗，打开的永远是“当天”的礼物
+   窗户上印着打乱的 1–7，第 N 个礼物 = N 号窗 = 12/24+N 那天解锁
    img 可以放图片网址或同仓库里的文件名，例如 'photo1.jpg'
    ========================================================= */
 const CONTENT = [
@@ -88,17 +94,15 @@ const PREVIEW = Q.has('preview');
 const HOUR_OVERRIDE = Q.has('hour') ? parseFloat(Q.get('hour')) : null;
 const dayDate = d => new Date(YEAR, 11, 24 + d);   // day 1 = 12/25
 const NEWYEAR = new Date(YEAR + 1, 0, 1);
-const DAYS = CONTENT.length, DOOR = 8;
+const DOOR = 8;
 let FW_PREVIEW = false;
 const isNewYear = () => PREVIEW ? FW_PREVIEW : new Date() >= NEWYEAR;
-const availCount = () => PREVIEW ? DAYS : CONTENT.filter((_,i) => new Date() >= dayDate(i+1)).length;
+const isUnlocked = W => PREVIEW || new Date() >= dayDate(W.n);
 const fmt = dt => `${dt.getMonth()+1}月${dt.getDate()}日`;
-const KEY = PREVIEW ? 'ww5-preview' : 'ww5-opened';
+const KEY = PREVIEW ? 'ww6-preview' : 'ww6-opened';
 let opened = {};   // window slot -> which day's gift it holds
 try { opened = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e) {}
 const saveOpened = () => { try { localStorage.setItem(KEY, JSON.stringify(opened)); } catch(e) {} };
-const usedCount = () => Object.keys(opened).filter(k => +k !== DOOR).length;
-const canOpen = () => usedCount() < availCount();
 function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const sstep = (a,b,x) => { const t = clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
@@ -244,13 +248,13 @@ const MAT = (id, snow=0, wid=0, emi=0) => [id, snow, wid, emi];
 
 /* ================= the house ================= */
 const WINS = [
-  {d:3, cx:-4, yb:8.6, w:1.3, h:2.0, kind:'top'},
-  {d:6, cx: 0, yb:8.6, w:1.3, h:2.0, kind:'top'},
-  {d:1, cx: 4, yb:8.6, w:1.3, h:2.0, kind:'top'},
-  {d:5, cx:-4, yb:5.0, w:1.4, h:2.4, kind:'mid'},
-  {d:2, cx: 4, yb:5.0, w:1.4, h:2.4, kind:'mid'},
-  {d:7, cx:-4, yb:0.9, w:1.4, h:2.2, kind:'ground'},
-  {d:4, cx: 4, yb:0.9, w:1.4, h:2.2, kind:'ground'},
+  {d:3, n:4, cx:-4, yb:8.6, w:1.3, h:2.0, kind:'top'},
+  {d:6, n:1, cx: 0, yb:8.6, w:1.3, h:2.0, kind:'top'},
+  {d:1, n:6, cx: 4, yb:8.6, w:1.3, h:2.0, kind:'top'},
+  {d:5, n:3, cx:-4, yb:5.0, w:1.4, h:2.4, kind:'mid'},
+  {d:2, n:7, cx: 4, yb:5.0, w:1.4, h:2.4, kind:'mid'},
+  {d:7, n:5, cx:-4, yb:0.9, w:1.4, h:2.2, kind:'ground'},
+  {d:4, n:2, cx: 4, yb:0.9, w:1.4, h:2.2, kind:'ground'},
   {d:8, cx: 0, yb:0.32, w:1.8, h:2.9, kind:'door'},
 ];
 WINS.forEach(W => { W.arch = (W.kind === 'ground' || W.kind === 'door') ? W.w/2 : 0; });
@@ -634,7 +638,7 @@ void main(){
     E+=v_col*v_mat.w*0.; }
   else if(id==11){ alb*=.7+.45*fbm3(wp.xz*.01+wp.y*.004); }
   else if(id==12){ float rim=pow(1.-max(dot(N,V),0.),2.); alb*=.75+.9*rim; spec=.2; shin=10.; }
-  else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA; E=mix(vec3(.05,.025,.01),vec3(.95,.6,.2)*(.85+u_n*.45),t.r); }
+  else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA; E=mix(vec3(.04,.02,.01),vec3(.98,.66,.24)*(.8+u_n*.4),t.r); }
   else if(id==14){ lit=false; E=alb*(.25+u_n*3.2)*(v_mat.w>.5?.6:1.); }
   else if(id==16){ lit=false; E=alb*u_n*(1.8+1.4*sin(u_t*2.5+hash(wp.xy*3.1)*30.)); }
   if(snowy>.5){ float sn=smoothstep(.62,.86,N.y+(noise(wp.xz*5.+wp.y)-.5)*.3); alb=mix(alb,vec3(.9,.92,.97),sn); spec=mix(spec,.2,sn); shin=mix(shin,40.,sn); }
@@ -647,7 +651,7 @@ void main(){
     vec3 H=normalize(u_L+V);
     vec3 pl=vec3(0.);
     for(int i=0;i<14;i++){ if(i>=u_npl) break; vec3 d=u_pl[i].xyz-wp; float dl=length(d); float a=u_pl[i].w/(1.+dl*dl*1.4); pl+=vec3(1.,.7,.4)*a*max(dot(N,d/dl),0.); }
-    c+=alb*(amb*ao+u_Lcol*nl*sh+pl+u_flash)+u_Lcol*spec*pow(max(dot(N,H),0.),shin)*sh*nl;
+    c+=alb*(amb*ao+u_Lcol*nl*sh+pl+u_flash*smoothstep(7.5,14.5,wp.y)*step(abs(wp.z),25.)*(.3+.7*max(N.y,0.)+.35*max(N.z,0.)))+u_Lcol*spec*pow(max(dot(N,H),0.),shin)*sh*nl;
   }
   float dist=length(wp-u_cam);
   float f=1.-exp(-dist*u_fogD);
@@ -763,15 +767,15 @@ gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE); gl.bindFramebuffer(gl.FRAMEBU
 const tagTex = gl.createTexture();
 function buildNumerals(){
   const c = document.createElement('canvas'); c.width = 7*128; c.height = 128; const x = c.getContext('2d');
-  x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
-  x.font = '112px "Pinyon Script", "Snell Roundhand", "Great Vibes", cursive';
-  for (let i=0;i<7;i++){ x.strokeStyle = '#000'; x.lineWidth = 9; x.strokeText(String(i+1), i*128+64, 72); x.fillStyle = '#fff'; x.fillText(String(i+1), i*128+64, 72); }
+  x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.lineJoin = 'round';
+  x.font = 'italic 900 112px "Playfair Display", "Bodoni 72", Didot, Georgia, serif';
+  for (let i=0;i<7;i++){ x.strokeStyle = '#000'; x.lineWidth = 10; x.strokeText(String(i+1), i*128+64, 104); x.fillStyle = '#fff'; x.fillText(String(i+1), i*128+64, 104); }
   gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c); gl.generateMipmap(gl.TEXTURE_2D);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 }
 buildNumerals();
-if (document.fonts && document.fonts.load) document.fonts.load('112px "Pinyon Script"').then(buildNumerals).catch(()=>{});
+if (document.fonts && document.fonts.load) document.fonts.load('italic 900 112px "Playfair Display"').then(buildNumerals).catch(()=>{});
 
 /* ================= build scene ================= */
 const world = upload(buildWorld());
@@ -785,8 +789,8 @@ WINS.forEach(W => {
   W.R = {mesh: leafR, hinge:[W.cx+W.w/2+.03, yb, zf]};
   const rb = ribbonGeo(W); W.rib = {mesh: upload(rb.G), c:[W.cx, rb.cy, zf + (door ? .0 : .0)]};
   W.state = opened[W.d] != null ? 1 : 0; W.t0 = -1e9;
-  if (!door) { const g = new Geo(), sz = Math.min(W.w*1.3, W.h*.95), cy = W.yb + W.h*.5;
-    g.box(W.cx-sz/2, cy-sz/2, -0.2, W.cx+sz/2, cy+sz/2, -0.199, C.white, MAT(18), null, true); W.num = upload(g); }
+  if (!door) { const g = new Geo(), sz = .86;
+    g.quad([-sz/2,-sz/2,0],[sz/2,-sz/2,0],[sz/2,sz/2,0],[-sz/2,sz/2,0],[0,0,1],C.white,MAT(18),[[0,0],[1,0],[1,1],[0,1]]); W.num = upload(g); }
   dyn.push(W.L.mesh, W.R.mesh, W.rib.mesh);
 });
 const hands = [0.42, 0.6].map((len,i) => { const g = new Geo(); g.box(-.025-.01*i,-.05,0,.025+.01*i,len,.03,C.iron,MAT(IRON)); return upload(g); });
@@ -853,10 +857,10 @@ function resize(){
 function camera(t){
   const asp = W_/H_, fy = 42*Math.PI/180, tv = Math.tan(fy/2);
   const dW = 8.2/(tv*asp), dH = 9.4/tv;
-  const dist = clamp(Math.max(dW, dH), 26, 60);
+  const dist = clamp(Math.max(dW, dH)*.95, 25, 60);
   const sway = .18*Math.sin(t*.07);
   CAM = [sway, 3.0, dist];
-  const tgt = [0, 10.2 + (dist-40)*.02, 0];
+  const tgt = [0, 11.6 + (dist-40)*.02, 0];
   const V = M4.look(CAM, tgt, [0,1,0]), P = M4.persp(fy, asp, .3, 5000);
   VP = M4.mul(P, V); IVP = M4.inv(VP);
 }
@@ -886,8 +890,8 @@ canvas.addEventListener('click', e => {
     if (isNewYear()) return openSlot(W, DOOR, 2600);
     W.shake = NOW; return toast('这扇大门会在新年零点打开');
   }
-  if (!canOpen()) { W.shake = NOW; return toast(availCount() === 0 ? '12月25日才能开始开窗哦' : '今天的礼物已经拆过啦，明天再来'); }
-  openSlot(W, usedCount() + 1, 2600);
+  if (!isUnlocked(W)) { W.shake = NOW; return toast(`${W.n} 号窗 ${fmt(dayDate(W.n))} 才能打开哦`); }
+  openSlot(W, W.n, 2600);
 });
 const modal = document.getElementById('modal');
 function showCard(slot, delay){
@@ -900,11 +904,12 @@ function showCard(slot, delay){
 }
 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('on'); });
 function updateStatus(){
-  const el = document.getElementById('status'), av = availCount(), used = usedCount();
+  const el = document.getElementById('status'), ws = WINS.filter(W => W.n);
+  const ready = ws.filter(W => isUnlocked(W) && opened[W.d] == null).sort((a,b) => a.n - b.n);
   if (isNewYear()) el.textContent = 'Happy New Year ✦';
-  else if (av === 0) el.textContent = `第一份礼物 12月25日 打开 · 还有 ${Math.ceil((dayDate(1) - new Date())/864e5)} 天`;
-  else if (used < av) el.textContent = av - used > 1 ? `今天可以挑 ${av-used} 扇窗打开 ✦` : '今天可以挑一扇窗打开 ✦';
-  else if (av < DAYS) el.textContent = '明天零点再来拆下一份 ✦';
+  else if (!PREVIEW && new Date() < dayDate(1)) el.textContent = `第一份礼物 12月25日 打开 · 还有 ${Math.ceil((dayDate(1) - new Date())/864e5)} 天`;
+  else if (ready.length) el.textContent = `去找找 ${ready[0].n} 号窗 ✦`;
+  else if (ws.some(W => opened[W.d] == null)) el.textContent = '明天零点再来拆下一份 ✦';
   else el.textContent = '新年零点，记得看看天空 ✦';
 }
 
@@ -933,10 +938,12 @@ function updateDyn(t){
     W.L.mesh.model = M4.mul(M4.T(shx,0,0), leafModel(W.L, W, ang));
     W.R.mesh.model = M4.mul(M4.T(shx,0,0), leafModel(W.R, W, ang));
     // ribbon: slips down, tumbles and vanishes
-    const c = W.rib.c, ready = W.state === 0 && (W.kind === 'door' ? isNewYear() : canOpen());
+    const c = W.rib.c, ready = W.state === 0 && (W.kind === 'door' ? isNewYear() : isUnlocked(W));
     const pulse = ready ? 1 + .05*Math.sin(t*3.2) : 1;
     const fall = rp*rp, sc = Math.max(1e-3, (1 - sstep(.55, 1, rp)) * pulse);
     W.rib.mesh.model = M4.chain(M4.T(c[0]+shx, c[1] - fall*2.2, c[2] + rp*.5), M4.RZ(rp*1.1), M4.RX(-rp*.8), M4.S(sc,sc,sc));
+    if (W.num) { const k = ease(sp), y0 = W.yb + W.h*.79, y1 = W.yb + W.h*.5, z0 = .26, z1 = -.2, s0 = 1, s1 = 1.35;
+      const ss = s0 + (s1-s0)*k; W.numM = M4.chain(M4.T(W.cx+shx, y0+(y1-y0)*k, z0+(z1-z0)*k), M4.S(ss,ss,ss)); }
     // light inside
     const op = W.state === 1 ? 1 : W.state === 2 ? sstep(.4, 2.2, t - W.t0) : 0;
     WGLOW[W.d] = ENV.st.n*.55 + op*(.35 + ENV.st.n*.55);
@@ -982,7 +989,7 @@ function draw(t){
   gl.uniform3fv(P.U.u_cam,CAM); gl.uniform3fv(P.U.u_L,E.L); gl.uniform3fv(P.U.u_Lcol,E.Lcol);
   const aI = st.aI; gl.uniform3fv(P.U.u_ambS, st.aS.map(v=>v*aI)); gl.uniform3fv(P.U.u_ambG, st.aG.map(v=>v*aI));
   gl.uniform1f(P.U.u_n,st.n); gl.uniform1f(P.U.u_t,t); gl.uniform1f(P.U.u_exp,st.ex); gl.uniform1f(P.U.u_fogD, .0008);
-  gl.uniform1fv(P.U.u_wg, WGLOW); gl.uniform3fv(P.U.u_flash, FW.flash.map(v=>v*.5));
+  gl.uniform1fv(P.U.u_wg, WGLOW); gl.uniform3fv(P.U.u_flash, FW.flash.map(v=>v*1.1));
   // warm point lights: windows, sconces, lamp
   const pl = [];
   WINS.forEach(W => { const g = WGLOW[W.d]; pl.push(W.cx, W.yb + W.h*.55, W.kind==='door'?1.2:.9, g * (W.kind==='door'?3.2:2.2)); });
@@ -996,71 +1003,80 @@ function draw(t){
   [hh/12, mm/60].forEach((f,i) => { const m = hands[i]; m.model = M4.chain(M4.T(0,13.05,0.3), M4.RZ(-f*Math.PI*2)); gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); });
   // gold calligraphic numerals on opened windows
   gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-  WINS.forEach(W => { if (!W.num || opened[W.d] == null) return; const a = W.state === 1 ? 1 : sstep(1.5, 2.6, t - W.t0); if (a <= 0) return;
-    gl.uniform1f(P.U.u_digit, opened[W.d]); gl.uniform1f(P.U.u_numA, a); gl.uniformMatrix4fv(P.U.u_model,false,M4.id()); gl.bindVertexArray(W.num.vao); gl.drawArrays(gl.TRIANGLES,0,W.num.count); });
+  WINS.forEach(W => { if (!W.num) return;
+    gl.uniform1f(P.U.u_digit, W.n); gl.uniform1f(P.U.u_numA, 1); gl.uniformMatrix4fv(P.U.u_model,false,W.numM); gl.bindVertexArray(W.num.vao); gl.drawArrays(gl.TRIANGLES,0,W.num.count); });
   gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
   drawFW();
 }
 
 /* ================= fireworks (from new year's midnight) ================= */
 const FW_VS = `#version 300 es
-in vec3 a_pos; in vec3 a_col; in vec2 a_sa; uniform mat4 u_vp; uniform vec3 u_cam; uniform float u_scale;
+in vec3 a_pos; in vec3 a_col; in vec2 a_sa; uniform mat4 u_vp; uniform float u_ps;
 out vec3 v_c; out float v_a;
-void main(){ gl_Position=u_vp*vec4(a_pos,1.); float d=length(a_pos-u_cam); gl_PointSize=clamp(a_sa.x*u_scale/d,1.,64.); v_c=a_col; v_a=a_sa.y; }`;
-const FW_FS = `#version 300 es
+void main(){ gl_Position=u_vp*vec4(a_pos,1.); gl_PointSize=u_ps*a_sa.x; v_c=a_col; v_a=a_sa.y; }`;
+const FW_FSL = `#version 300 es
 precision mediump float; in vec3 v_c; in float v_a; out vec4 o;
-void main(){ vec2 p=gl_PointCoord*2.-1.; float r=dot(p,p); if(r>1.) discard; float g=exp(-r*3.2); vec3 c=mix(v_c,vec3(1.),exp(-r*14.)*.65); o=vec4(c*g*v_a*1.5,1.); }`;
-const P_FW = prog(FW_VS, FW_FS);
-const MAXP = 15000, fwData = new Float32Array(MAXP*8);
-const fwVAO = gl.createVertexArray(), fwBuf = gl.createBuffer();
-gl.bindVertexArray(fwVAO); gl.bindBuffer(gl.ARRAY_BUFFER, fwBuf); gl.bufferData(gl.ARRAY_BUFFER, fwData.byteLength, gl.DYNAMIC_DRAW);
-[[0,3,0],[2,3,3],[5,2,6]].forEach(([l,n,o]) => { gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l,n,gl.FLOAT,false,32,o*4); });
-gl.bindVertexArray(null);
-const FW = { on: false, parts: [], rockets: [], next: 0, flash: [0,0,0] };
-const PAL = [['#ff5a8a','#ffd0e0'],['#ffd36a','#fff2c0'],['#6ad8ff','#d8f6ff'],['#b88aff','#efe0ff'],['#7dff9a','#e0ffe8'],['#ff7a4a','#ffd2b0'],['#ffffff','#cfe3ff']].map(p => p.map(hex));
+void main(){ o=vec4(v_c*v_a,1.); }`;
+const FW_FSP = `#version 300 es
+precision mediump float; in vec3 v_c; in float v_a; out vec4 o;
+void main(){ float r=length(gl_PointCoord*2.-1.); float g=smoothstep(1.,.35,r); o=vec4(mix(v_c,vec3(1.),.55)*g*v_a,1.); }`;
+const P_FWL = prog(FW_VS, FW_FSL), P_FWP = prog(FW_VS, FW_FSP);
+const HL = 9, MAXPART = 2600;
+const lineData = new Float32Array(MAXPART*(HL-1)*2*8), headData = new Float32Array(MAXPART*8);
+const mkFwVAO = (bytes) => { const v = gl.createVertexArray(), b = gl.createBuffer(); gl.bindVertexArray(v); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, bytes, gl.DYNAMIC_DRAW);
+  [[0,3,0],[2,3,3],[5,2,6]].forEach(([l,n,o]) => { gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l,n,gl.FLOAT,false,32,o*4); }); gl.bindVertexArray(null); return {v, b}; };
+const fwL = mkFwVAO(lineData.byteLength), fwP = mkFwVAO(headData.byteLength);
+const FW = { on: false, parts: [], next: 0, flash: [0,0,0] };
+const PAL = ['#ff4f7e','#ffcf5a','#5fd6ff','#b98bff','#6dff9a','#ff7a3c','#f4f6ff','#ff9ad0','#9fe8ff'].map(hex);
 const rnd = (a,b) => a + Math.random()*(b-a);
-function launch(){ FW.rockets.push({p:[rnd(-58,58),0,rnd(-330,-250)], v:[rnd(-3,3),rnd(70,90),0], fuse:rnd(1.7,2.3), age:0}); }
+function mkPart(p, v, c, life, k, g, rocket=false){ return {p:[...p], v, c, life, age:0, k, g, rocket, hist:new Float32Array(HL*3), hn:0, hi:0, cr:Math.random()<.25}; }
+function launch(){ const c = hex('#ffd9a0'); FW.parts.push(mkPart([rnd(-55,55),0,rnd(-320,-260)], [rnd(-2,2),rnd(74,92),0], c, rnd(1.7,2.2), .05, 9, true)); }
 function burst(p){
-  const pal = PAL[Math.floor(Math.random()*PAL.length)], pal2 = Math.random() < .4 ? PAL[Math.floor(Math.random()*PAL.length)] : pal;
-  const type = Math.random(), n = Math.floor(rnd(180,260)), sp = rnd(38,52), willow = type > .82, ring = type < .2;
-  const ax = norm([Math.random()-.5, Math.random()-.5, Math.random()-.5]);
-  const u = norm([-ax[1], ax[0], .001]), w = [ax[1]*u[2]-ax[2]*u[1], ax[2]*u[0]-ax[0]*u[2], ax[0]*u[1]-ax[1]*u[0]];
+  const c1 = PAL[Math.floor(Math.random()*PAL.length)], c2 = Math.random() < .45 ? PAL[Math.floor(Math.random()*PAL.length)] : c1;
+  const n = Math.floor(rnd(110,160)), sp = rnd(40,54), core = Math.random() < .4;
+  // evenly spread directions on a sphere (fibonacci) for a clean round shell
+  const off = Math.random()*6.28;
   for (let i=0;i<n;i++){
-    let d;
-    if (ring) { const a = i/n*Math.PI*2; d = u.map((q,k) => q*Math.cos(a) + w[k]*Math.sin(a)); }
-    else { const z = Math.random()*2-1, a = Math.random()*Math.PI*2, r = Math.sqrt(1-z*z); d = [r*Math.cos(a), z, r*Math.sin(a)]; }
-    const s = sp*(willow ? .7 : rnd(.86,1));
-    FW.parts.push({p:[...p], v:d.map(q => q*s), c: willow ? hex('#ffcf7a') : (i%2 ? pal[0] : pal2[1]), life: willow ? rnd(3,4.2) : rnd(1.7,2.7), age:0, k: willow ? 1.6 : 1.1, g: willow ? 5 : 8, sz: willow ? 2.4 : 3.1, cr: Math.random() < .3});
+    const y = 1 - 2*(i+.5)/n, r = Math.sqrt(1-y*y), a = i*2.39996 + off;
+    const d = [r*Math.cos(a), y, r*Math.sin(a)], s = sp*rnd(.95,1.03);
+    if (FW.parts.length < MAXPART) FW.parts.push(mkPart(p, d.map(q=>q*s), c1, rnd(2.2,2.9), 1.25, 7.5));
+    if (core && i%3===0 && FW.parts.length < MAXPART) FW.parts.push(mkPart(p, d.map(q=>q*s*.45), c2, rnd(1.6,2.1), 1.25, 7.5));
   }
-  FW.flash = FW.flash.map((v,i) => Math.min(1.2, v + pal[0][i]*.25));
+  FW.flash = FW.flash.map((v,i) => Math.min(1.4, v + c1[i]*.55));
 }
 function updateFW(dt){
   dt = Math.min(dt, .05);
-  if (FW.on) { FW.next -= dt; if (FW.next <= 0) { const k = Math.random() < .2 ? Math.floor(rnd(3,6)) : 1; for (let i=0;i<k;i++) launch(); FW.next = rnd(.45, 1.5); } }
-  for (const r of FW.rockets) { r.age += dt; r.v[1] -= 9*dt; for (let k=0;k<3;k++) r.p[k] += r.v[k]*dt;
-    FW.parts.push({p:[...r.p], v:[rnd(-1,1),rnd(-5,-2),rnd(-1,1)], c:hex('#ffd9a0'), life:rnd(.4,.8), age:0, k:2, g:4, sz:.9, cr:false}); }
-  FW.rockets = FW.rockets.filter(r => { if (r.age > r.fuse || r.v[1] < 6) { burst(r.p); return false; } return true; });
-  for (const q of FW.parts) { q.age += dt; const dr = Math.exp(-q.k*dt); for (let k=0;k<3;k++) { q.v[k] *= dr; } q.v[1] -= q.g*dt; for (let k=0;k<3;k++) q.p[k] += q.v[k]*dt; }
+  if (FW.on) { FW.next -= dt; if (FW.next <= 0) { const k = Math.random() < .22 ? Math.floor(rnd(2,5)) : 1; for (let i=0;i<k;i++) launch(); FW.next = rnd(.5, 1.6); } }
+  const born = [];
+  for (const q of FW.parts) {
+    q.age += dt; const dr = Math.exp(-q.k*dt); for (let k=0;k<3;k++) q.v[k] *= dr; q.v[1] -= q.g*dt; for (let k=0;k<3;k++) q.p[k] += q.v[k]*dt;
+    q.hist[q.hi*3] = q.p[0]; q.hist[q.hi*3+1] = q.p[1]; q.hist[q.hi*3+2] = q.p[2]; q.hi = (q.hi+1)%HL; q.hn = Math.min(q.hn+1, HL);
+    if (q.rocket && (q.age > q.life || q.v[1] < 8)) { q.age = q.life; born.push(q.p); }
+  }
   FW.parts = FW.parts.filter(q => q.age < q.life);
-  if (FW.parts.length > 5000) FW.parts.splice(0, FW.parts.length - 5000);
-  const fd = Math.exp(-dt*3.5); FW.flash = FW.flash.map(v => v*fd);
+  born.forEach(burst);
+  const fd = Math.exp(-dt*3.2); FW.flash = FW.flash.map(v => v*fd);
 }
 function drawFW(){
   if (!FW.parts.length) return;
-  let n = 0;
+  let nl = 0, np = 0;
   for (const q of FW.parts) {
-    const f = 1 - q.age/q.life; let a = Math.pow(f, 1.3); if (q.cr && f < .4) a *= Math.random() < .5 ? 0 : 1.7;
-    for (let s=0; s<3 && n<MAXP; s++, n++) {
-      const o = n*8, back = s*.06;
-      fwData[o] = q.p[0]-q.v[0]*back; fwData[o+1] = q.p[1]-q.v[1]*back; fwData[o+2] = q.p[2]-q.v[2]*back;
-      fwData[o+3] = q.c[0]; fwData[o+4] = q.c[1]; fwData[o+5] = q.c[2]; fwData[o+6] = q.sz*(1-s*.25); fwData[o+7] = a*(1-s*.35);
+    const f = 1 - q.age/q.life; let a = q.rocket ? .9 : Math.pow(f, 1.15);
+    if (q.cr && f < .35) a *= Math.random() < .5 ? .15 : 1.6;
+    const br = q.rocket ? 1 : 1.9;
+    for (let k=0; k<q.hn-1; k++) {
+      const j0 = (q.hi-1-k+HL*2)%HL, j1 = (q.hi-2-k+HL*2)%HL;
+      const a0 = a*(1-k/q.hn), a1 = a*(1-(k+1)/q.hn);
+      for (const [j,aa] of [[j0,a0],[j1,a1]]) { const o = nl*8; lineData[o]=q.hist[j*3]; lineData[o+1]=q.hist[j*3+1]; lineData[o+2]=q.hist[j*3+2];
+        lineData[o+3]=q.c[0]*br; lineData[o+4]=q.c[1]*br; lineData[o+5]=q.c[2]*br; lineData[o+6]=1; lineData[o+7]=aa; nl++; }
     }
+    if (!q.rocket) { const o = np*8; headData[o]=q.p[0]; headData[o+1]=q.p[1]; headData[o+2]=q.p[2]; headData[o+3]=q.c[0]; headData[o+4]=q.c[1]; headData[o+5]=q.c[2]; headData[o+6]=2.4; headData[o+7]=a; np++; }
   }
-  gl.useProgram(P_FW.p);
-  gl.uniformMatrix4fv(P_FW.U.u_vp,false,VP); gl.uniform3fv(P_FW.U.u_cam,CAM); gl.uniform1f(P_FW.U.u_scale, canvas.height/(2*Math.tan(21*Math.PI/180)));
-  gl.bindVertexArray(fwVAO); gl.bindBuffer(gl.ARRAY_BUFFER, fwBuf); gl.bufferSubData(gl.ARRAY_BUFFER, 0, fwData.subarray(0, n*8));
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false);
-  gl.drawArrays(gl.POINTS, 0, n);
+  gl.useProgram(P_FWL.p); gl.uniformMatrix4fv(P_FWL.U.u_vp,false,VP); gl.uniform1f(P_FWL.U.u_ps, DPR);
+  gl.bindVertexArray(fwL.v); gl.bindBuffer(gl.ARRAY_BUFFER, fwL.b); gl.bufferSubData(gl.ARRAY_BUFFER, 0, lineData.subarray(0, nl*8)); gl.drawArrays(gl.LINES, 0, nl);
+  gl.useProgram(P_FWP.p); gl.uniformMatrix4fv(P_FWP.U.u_vp,false,VP); gl.uniform1f(P_FWP.U.u_ps, DPR);
+  gl.bindVertexArray(fwP.v); gl.bindBuffer(gl.ARRAY_BUFFER, fwP.b); gl.bufferSubData(gl.ARRAY_BUFFER, 0, headData.subarray(0, np*8)); gl.drawArrays(gl.POINTS, 0, np);
   gl.disable(gl.BLEND); gl.depthMask(true);
 }
 
@@ -1113,6 +1129,7 @@ function loop(){
 }
 requestAnimationFrame(loop);
 if (!PREVIEW) setInterval(updateStatus, 60000);
+addEventListener('pointerdown', () => { const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen; if (f && !document.fullscreenElement) try { const r = f.call(el); if (r && r.catch) r.catch(()=>{}); } catch(e) {} }, {once:true});
 if (PREVIEW) {
   document.body.classList.add('has-preview');
   const p = document.getElementById('preview'), s = document.getElementById('hslider'), l = document.getElementById('hlabel');
