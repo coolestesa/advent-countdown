@@ -9,24 +9,19 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--n:1;--day:0}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;background:#070b1c}
 body{font-family:'Cormorant Garamond','Noto Serif TC',Georgia,serif;color:#fff;
   -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
-#sky,#scene,#fg,#snow,#grain,#vig{position:fixed;inset:0;width:100%;height:100%}
-#sky{z-index:1}
-#scene{z-index:3;height:100dvh}
-#fg{z-index:4;pointer-events:none;filter:blur(3.5px);height:100dvh}
-#snow{z-index:5;pointer-events:none}
-#vig{z-index:6;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,transparent 55%,rgba(5,8,25,.42) 100%)}
-#grain{z-index:7;pointer-events:none;opacity:.09;mix-blend-mode:overlay;background-size:200px 200px}
-
+#gl,#snow,#grain,#vig{position:fixed;inset:0;width:100%;height:100%}
+#gl{z-index:1;display:block}
+#snow{z-index:3;pointer-events:none}
+#vig{z-index:4;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,transparent 58%,rgba(5,8,25,.38) 100%)}
+#grain{z-index:5;pointer-events:none;opacity:.07;mix-blend-mode:overlay;background-size:200px 200px}
 #title{position:fixed;z-index:8;left:0;right:0;top:calc(env(safe-area-inset-top) + 3.6vh);text-align:center;pointer-events:none;
-  text-shadow:0 1px 10px rgba(5,10,40,.5),0 0 2px rgba(5,10,40,.3)}
-#title .sub{font-size:11px;letter-spacing:.46em;font-weight:600;opacity:.9;padding-left:.46em}
+  text-shadow:0 1px 12px rgba(5,10,40,.55),0 0 2px rgba(5,10,40,.35)}
+#title .sub{font-size:11px;letter-spacing:.46em;font-weight:600;opacity:.92;padding-left:.46em}
 #title h1{font-style:italic;font-weight:500;font-size:clamp(34px,10vw,48px);line-height:1.05;color:#f1d89b;margin-top:3px}
-
 #status{position:fixed;z-index:9;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 3vh);
   font-family:'Noto Serif TC',serif;font-size:13px;letter-spacing:.08em;white-space:nowrap;padding:8px 18px;border-radius:999px;
   background:rgba(12,16,40,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(241,216,155,.35);color:#f8efd8}
@@ -34,57 +29,8 @@ body{font-family:'Cormorant Garamond','Noto Serif TC',Georgia,serif;color:#fff;
   font-family:'Noto Serif TC',serif;font-size:13px;padding:8px 14px;border-radius:6px;background:#fbf6ea;color:#3a2e22;
   box-shadow:0 6px 18px rgba(0,0,30,.3);opacity:0;transition:.35s;pointer-events:none;white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}
-
-/* scene classes (colors come from JS) */
-.m1{fill:var(--m1)}.m2{fill:var(--m2)}.m3{fill:var(--m3)}.m4{fill:var(--m4)}
-.l1{fill:var(--l1)}.l2{fill:var(--l2)}.l3{fill:var(--l3)}
-.fL{fill:var(--faceL)}.fR{fill:var(--faceR)}
-.clight{opacity:var(--n)}
-.dimday{opacity:calc(.18 + var(--n)*.82)}
-.nightonly{opacity:var(--n)}
-.dayonly{opacity:var(--day)}
-.fac{fill:var(--facade)}.facD{fill:var(--facadeD)}.trim{fill:var(--trim)}
-.roof{fill:var(--roof)}.roofD{fill:var(--roofD)}.roofL{fill:var(--roofL)}
-.snow{fill:var(--snow)}.snowD{fill:var(--snowD)}.iron{fill:var(--iron)}.ironS{stroke:var(--iron);fill:none}
-.gold{fill:var(--gold)}.ln{stroke:var(--facadeD);fill:none;stroke-width:.6}
-.sline{stroke:var(--roofD);fill:none;stroke-width:.6}
-.lv{stroke:var(--shutterD);stroke-width:.7;fill:none}
-.shut{fill:var(--shutter);stroke:var(--shutterD);stroke-width:.6}
-.shutL{fill:var(--shutterL)}
-.gr1{fill:var(--green)}.gr2{fill:var(--green2)}.berry{fill:var(--berry)}
-.trunk{fill:var(--trunk)}.gnd{fill:url(#gndG)}.gnd2{fill:url(#gndG2)}
-.fl{fill:#ffe9b0;opacity:var(--n)}
-.flg{fill:url(#flG);opacity:var(--n)}
-.tw{animation:tw 2.8s ease-in-out infinite}
-@keyframes tw{50%{opacity:calc(var(--n)*.25)}}
-
-/* windows */
-.win{cursor:pointer}
-.halo{fill:#ffc46a;opacity:calc(var(--n)*.5)}
-.win.ready .halo{opacity:calc(var(--n)*.7 + .3)}
-.win.open .halo{opacity:calc(var(--n)*1 + .15)}
-.sh{transform-box:fill-box;transition:transform 1.3s cubic-bezier(.55,.05,.25,1) .45s}
-.sh.L{transform-origin:0% 50%}.sh.R{transform-origin:100% 50%}
-.win.open .sh{transform:scaleX(-.92)}
-.win.door.open .sh{transform:scaleX(-.6)}
-.shade{fill:#14110f;opacity:0;transition:opacity 1.3s .45s}
-.win.open .shade{opacity:.28}
-.strip{transition:opacity .4s .05s}
-.win.open .strip{opacity:0}
-.bow,.tag{transform-box:fill-box;transform-origin:50% 50%;transition:transform .8s cubic-bezier(.5,0,.85,.45),opacity .6s .15s}
-.win.open .bow{transform:translateY(50px) rotate(40deg);opacity:0}
-.win.open .tag{transform:translateY(56px) rotate(-34deg);opacity:0}
-.win.ready .bow{animation:pulse 2.4s ease-in-out infinite}
-@keyframes pulse{50%{transform:scale(1.16)}}
-.gift{opacity:0;transition:opacity .8s 1.2s}
-.win.open .gift{opacity:1}
-.win.shake{animation:shake .45s}
-@keyframes shake{20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
-.instant *{transition:none!important}
-
-/* card */
 #modal{position:fixed;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;padding:24px;
-  background:rgba(8,12,34,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .45s}
+  background:rgba(8,12,34,.42);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .45s}
 #modal.on{opacity:1;pointer-events:auto}
 .card{position:relative;width:min(340px,100%);max-height:82vh;overflow:auto;background:#fbf7ee;color:#2d2620;border-radius:3px;
   padding:38px 26px 26px;text-align:center;box-shadow:0 22px 60px rgba(0,0,20,.5);transform:translateY(18px) scale(.96);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
@@ -96,28 +42,26 @@ body{font-family:'Cormorant Garamond','Noto Serif TC',Georgia,serif;color:#fff;
 .card p{font-family:'Noto Serif TC',serif;font-size:15px;line-height:1.85;color:#4a3f34;white-space:pre-line}
 .card img{width:100%;border-radius:2px;margin:6px 0 12px;display:block}
 .card button{margin-top:20px;font-family:'Noto Serif TC',serif;font-size:14px;letter-spacing:.2em;padding:9px 26px;border:1px solid #2d2620;background:none;color:#2d2620;border-radius:999px;cursor:pointer}
-
 #preview{position:fixed;z-index:11;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 8px);display:none;align-items:center;gap:10px;
   font:12px -apple-system,system-ui,sans-serif;background:rgba(10,14,40,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:7px 10px;border-radius:10px}
 #preview.on{display:flex}
 #preview input{flex:1;accent-color:#f1d89b}
 #preview button{font:inherit;color:#fff;background:rgba(255,255,255,.15);border:0;border-radius:6px;padding:5px 8px}
 body.has-preview #title{top:calc(env(safe-area-inset-top) + 52px)}
-@media (prefers-reduced-motion:reduce){.tw,.win.ready .bow{animation:none}}
+#nogl{position:fixed;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;font-family:'Noto Serif TC',serif;z-index:20;background:#0b1030}
 </style>
 </head>
 <body>
-<canvas id="sky"></canvas>
-<div id="title"><div class="sub">DEC 25 — JAN 1</div><h1>Winter Windows</h1></div>
-<svg id="scene" viewBox="0 0 400 860" preserveAspectRatio="xMidYMax meet"></svg>
-<svg id="fg" viewBox="0 0 400 860" preserveAspectRatio="xMidYMax meet"></svg>
+<canvas id="gl"></canvas>
 <canvas id="snow"></canvas>
 <div id="vig"></div>
 <div id="grain"></div>
+<div id="title"><div class="sub">DEC 25 — JAN 1</div><h1>Winter Windows</h1></div>
 <div id="status"></div>
 <div id="toast"></div>
 <div id="preview"><span id="hlabel">--:--</span><input id="hslider" type="range" min="0" max="24" step="0.05"><button id="reset">重置</button></div>
 <div id="modal"><div class="card" id="card"></div></div>
+<div id="nogl">这个页面需要较新的浏览器（支持 WebGL2）才能显示 3D 场景。</div>
 
 <script>
 /* =========================================================
@@ -134,739 +78,953 @@ const CONTENT = [
   { title: '跨年前夜',   text: '今年辛苦啦。\n谢谢你出现在这一年里。' },
   { title: '新年快乐',   text: '2027，\n我们也要一起。' },
 ];
-const PLAQUE = '✦';     // 中间小牌子上的字，可以换成名字缩写
-const YEAR = 2026;       // 12/25 所在的年份
+const YEAR = 2026;   // 12/25 所在的年份
 
-/* ================= helpers ================= */
+/* ================= basics ================= */
 const Q = new URLSearchParams(location.search);
 const PREVIEW = Q.has('preview');
 const HOUR_OVERRIDE = Q.has('hour') ? parseFloat(Q.get('hour')) : null;
 const dayDate = d => new Date(YEAR, 11, 24 + d);
 const isUnlocked = d => PREVIEW || new Date() >= dayDate(d);
 const fmt = dt => `${dt.getMonth()+1}月${dt.getDate()}日`;
-const KEY = PREVIEW ? 'ww3-preview' : 'ww3-opened';
+const KEY = PREVIEW ? 'ww4-preview' : 'ww4-opened';
 let opened = new Set();
 try { opened = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch(e) {}
 const saveOpened = () => { try { localStorage.setItem(KEY, JSON.stringify([...opened])); } catch(e) {} };
 function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-const hx = h => [1,3,5].map(i => parseInt(h.substr(i,2),16));
-const toHex = a => '#' + a.map(v => Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
-const mix = (a,b,t) => { const A = hx(a), B = hx(b); return toHex(A.map((v,i) => v + (B[i]-v)*t)); };
-const mul = (a,t) => { const A = hx(a), T = hx(t); return toHex(A.map((v,i) => v*T[i]/255)); };
-const rgba = (h,a) => { const A = hx(h); return `rgba(${A[0]},${A[1]},${A[2]},${a.toFixed(3)})`; };
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const sstep = (a,b,x) => { const t = clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
-const f1 = n => +n.toFixed(1);
+const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+const hex = h => [1,3,5].map(i => parseInt(h.substr(i,2),16)/255);
+const lin = h => hex(h).map(v => Math.pow(v, 2.2));
+const mixA = (a,b,t) => a.map((v,i) => v + (b[i]-v)*t);
 
-/* ================= time-of-day palette ================= */
-// zen/hor: sky; glow: sun glow color & strength; dark: farthest-to-nearest haze target; tint: light on the house
+/* ================= matrices (column-major) ================= */
+const M4 = {
+  id: () => [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1],
+  mul(a,b){ const o = new Array(16); for (let c=0;c<4;c++) for (let r=0;r<4;r++){ let s=0; for (let k=0;k<4;k++) s += a[k*4+r]*b[c*4+k]; o[c*4+r]=s; } return o; },
+  T: (x,y,z) => [1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1],
+  S: (x,y,z) => [x,0,0,0, 0,y,0,0, 0,0,z,0, 0,0,0,1],
+  RX: a => { const c=Math.cos(a), s=Math.sin(a); return [1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]; },
+  RY: a => { const c=Math.cos(a), s=Math.sin(a); return [c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]; },
+  RZ: a => { const c=Math.cos(a), s=Math.sin(a); return [c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]; },
+  chain(...ms){ return ms.reduce((a,b) => M4.mul(a,b)); },
+  persp(fy, asp, n, f){ const t = 1/Math.tan(fy/2); return [t/asp,0,0,0, 0,t,0,0, 0,0,(f+n)/(n-f),-1, 0,0,2*f*n/(n-f),0]; },
+  ortho(l,r,b,t,n,f){ return [2/(r-l),0,0,0, 0,2/(t-b),0,0, 0,0,-2/(f-n),0, -(r+l)/(r-l),-(t+b)/(t-b),-(f+n)/(f-n),1]; },
+  look(e, c, u){
+    let z = [e[0]-c[0], e[1]-c[1], e[2]-c[2]]; let l = Math.hypot(...z); z = z.map(v => v/l);
+    let x = [u[1]*z[2]-u[2]*z[1], u[2]*z[0]-u[0]*z[2], u[0]*z[1]-u[1]*z[0]]; l = Math.hypot(...x); x = x.map(v => v/l);
+    const y = [z[1]*x[2]-z[2]*x[1], z[2]*x[0]-z[0]*x[2], z[0]*x[1]-z[1]*x[0]];
+    return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]), -(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]), -(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]), 1];
+  },
+  inv(m){
+    const a=m, o=new Array(16);
+    const b00=a[0]*a[5]-a[1]*a[4], b01=a[0]*a[6]-a[2]*a[4], b02=a[0]*a[7]-a[3]*a[4], b03=a[1]*a[6]-a[2]*a[5], b04=a[1]*a[7]-a[3]*a[5], b05=a[2]*a[7]-a[3]*a[6];
+    const b06=a[8]*a[13]-a[9]*a[12], b07=a[8]*a[14]-a[10]*a[12], b08=a[8]*a[15]-a[11]*a[12], b09=a[9]*a[14]-a[10]*a[13], b10=a[9]*a[15]-a[11]*a[13], b11=a[10]*a[15]-a[11]*a[14];
+    const d = 1/(b00*b11-b01*b10+b02*b09+b03*b08-b04*b07+b05*b06);
+    o[0]=(a[5]*b11-a[6]*b10+a[7]*b09)*d; o[1]=(a[2]*b10-a[1]*b11-a[3]*b09)*d; o[2]=(a[13]*b05-a[14]*b04+a[15]*b03)*d; o[3]=(a[10]*b04-a[9]*b05-a[11]*b03)*d;
+    o[4]=(a[6]*b08-a[4]*b11-a[7]*b07)*d; o[5]=(a[0]*b11-a[2]*b08+a[3]*b07)*d; o[6]=(a[14]*b02-a[12]*b05-a[15]*b01)*d; o[7]=(a[8]*b05-a[10]*b02+a[11]*b01)*d;
+    o[8]=(a[4]*b10-a[5]*b08+a[7]*b06)*d; o[9]=(a[1]*b08-a[0]*b10-a[3]*b06)*d; o[10]=(a[12]*b04-a[13]*b02+a[15]*b00)*d; o[11]=(a[9]*b02-a[8]*b04-a[11]*b00)*d;
+    o[12]=(a[5]*b07-a[4]*b09-a[6]*b06)*d; o[13]=(a[0]*b09-a[1]*b07+a[2]*b06)*d; o[14]=(a[13]*b01-a[12]*b03-a[14]*b00)*d; o[15]=(a[8]*b03-a[9]*b01+a[10]*b00)*d;
+    return o;
+  },
+  xf(m,p){ const w = m[3]*p[0]+m[7]*p[1]+m[11]*p[2]+m[15]; return [(m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12])/w, (m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13])/w, (m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14])/w]; },
+};
+
+/* ================= geometry builder ================= */
+// material ids
+const STONE=1, ZINC=2, IRON=3, GOLD=4, WOOD=5, GLASS=6, ROOM=7, GROUND=8, NEEDLE=9, CITY=10, MOUNT=11, VELVET=12, TAG=13, LAMP=14, CLOTH=15, FAIRY=16, PLAIN=0, BRICK=17;
+class Geo {
+  constructor(){ this.d = []; }
+  v(p,n,c,m,uv){ this.d.push(p[0],p[1],p[2],n[0],n[1],n[2],c[0],c[1],c[2],m[0],m[1],m[2],m[3],uv[0],uv[1]); }
+  tri(a,b,c,n,col,m,ua=[0,0],ub=[0,0],uc=[0,0]){ this.v(a,n,col,m,ua); this.v(b,n,col,m,ub); this.v(c,n,col,m,uc); }
+  quad(a,b,c,d,n,col,m,uv){ uv = uv || [[0,0],[0,0],[0,0],[0,0]]; this.tri(a,b,c,n,col,m,uv[0],uv[1],uv[2]); this.tri(a,c,d,n,col,m,uv[0],uv[2],uv[3]); }
+  // transform helper
+  P(M,p){ return M ? M4.xf(M,p) : p; }
+  N(M,n){ if (!M) return n; const r = [M[0]*n[0]+M[4]*n[1]+M[8]*n[2], M[1]*n[0]+M[5]*n[1]+M[9]*n[2], M[2]*n[0]+M[6]*n[1]+M[10]*n[2]]; const l = Math.hypot(...r)||1; return r.map(v=>v/l); }
+  box(x0,y0,z0,x1,y1,z1,col,m,M=null,uvN=false){
+    const P = p => this.P(M,p), N = n => this.N(M,n);
+    const F = (pts, n, uvs) => this.quad(P(pts[0]),P(pts[1]),P(pts[2]),P(pts[3]),N(n),col,m, uvN ? [[0,0],[1,0],[1,1],[0,1]] : uvs);
+    F([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]],[0,0,1],[[x0,y0],[x1,y0],[x1,y1],[x0,y1]]);
+    F([[x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0]],[0,0,-1],[[x1,y0],[x0,y0],[x0,y1],[x1,y1]]);
+    F([[x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1]],[1,0,0],[[z1,y0],[z0,y0],[z0,y1],[z1,y1]]);
+    F([[x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0]],[-1,0,0],[[z0,y0],[z1,y0],[z1,y1],[z0,y1]]);
+    F([[x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0]],[0,1,0],[[x0,z1],[x1,z1],[x1,z0],[x0,z0]]);
+    F([[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]],[0,-1,0],[[x0,z0],[x1,z0],[x1,z1],[x0,z1]]);
+  }
+  cbox(cx,cy,cz,w,h,d,col,m,M){ this.box(cx-w/2,cy-h/2,cz-d/2,cx+w/2,cy+h/2,cz+d/2,col,m,M); }
+  cyl(cx,cy,cz,r,h,seg,col,m,M=null,caps=true,r2=null){
+    r2 = r2 ?? r; const P = p => this.P(M,p), N = n => this.N(M,n);
+    const sl = (r - r2)/h, nl = Math.hypot(1, sl);
+    for (let i=0;i<seg;i++){
+      const a0 = i/seg*Math.PI*2, a1 = (i+1)/seg*Math.PI*2, c0=Math.cos(a0), s0=Math.sin(a0), c1=Math.cos(a1), s1=Math.sin(a1);
+      const p00=[cx+c0*r,cy,cz+s0*r], p10=[cx+c1*r,cy,cz+s1*r], p11=[cx+c1*r2,cy+h,cz+s1*r2], p01=[cx+c0*r2,cy+h,cz+s0*r2];
+      const n0=N([c0/nl, sl/nl, s0/nl]), n1=N([c1/nl, sl/nl, s1/nl]);
+      this.v(P(p00),n0,col,m,[a0*r,0]); this.v(P(p10),n1,col,m,[a1*r,0]); this.v(P(p11),n1,col,m,[a1*r,h]);
+      this.v(P(p00),n0,col,m,[a0*r,0]); this.v(P(p11),n1,col,m,[a1*r,h]); this.v(P(p01),n0,col,m,[a0*r,h]);
+      if (caps) {
+        if (r2 > 0) this.tri(P([cx,cy+h,cz]),P(p01),P(p11),N([0,1,0]),col,m);
+        this.tri(P([cx,cy,cz]),P(p10),P(p00),N([0,-1,0]),col,m);
+      }
+    }
+  }
+  sphere(cx,cy,cz,rx,ry,rz,col,m,M=null,su=10,sv=7){
+    const P = p => this.P(M,p), N = n => this.N(M,n);
+    const pt = (u,v) => { const th=u/su*Math.PI*2, ph=v/sv*Math.PI; const n=[Math.sin(ph)*Math.cos(th), Math.cos(ph), Math.sin(ph)*Math.sin(th)]; return [[cx+n[0]*rx, cy+n[1]*ry, cz+n[2]*rz], n]; };
+    for (let u=0;u<su;u++) for (let v=0;v<sv;v++){
+      const [a,na]=pt(u,v),[b,nb]=pt(u+1,v),[c,nc]=pt(u+1,v+1),[d,nd]=pt(u,v+1);
+      this.v(P(a),N(na),col,m,[0,0]); this.v(P(b),N(nb),col,m,[0,0]); this.v(P(c),N(nc),col,m,[0,0]);
+      this.v(P(a),N(na),col,m,[0,0]); this.v(P(c),N(nc),col,m,[0,0]); this.v(P(d),N(nd),col,m,[0,0]);
+    }
+  }
+  torus(R,r,su,sv,col,m,M,arc=Math.PI*2){
+    const P = p => this.P(M,p), N = n => this.N(M,n);
+    const pt = (u,v) => { const a=u/su*arc, b=v/sv*Math.PI*2; const cx=Math.cos(a), sx=Math.sin(a); const n=[cx*Math.cos(b), sx*Math.cos(b), Math.sin(b)]; return [[cx*R+n[0]*r, sx*R+n[1]*r, n[2]*r], n]; };
+    for (let u=0;u<su;u++) for (let v=0;v<sv;v++){
+      const [a,na]=pt(u,v),[b,nb]=pt(u+1,v),[c,nc]=pt(u+1,v+1),[d,nd]=pt(u,v+1);
+      this.v(P(a),N(na),col,m,[0,0]); this.v(P(b),N(nb),col,m,[0,0]); this.v(P(c),N(nc),col,m,[0,0]);
+      this.v(P(a),N(na),col,m,[0,0]); this.v(P(c),N(nc),col,m,[0,0]); this.v(P(d),N(nd),col,m,[0,0]);
+    }
+  }
+  // frustum along y, rectangular sections centred on (cx,cz)
+  taper(cx,y0,cz,w0,d0,y1,w1,d1,col,m,M=null){
+    const P = p => this.P(M,p), N = n => this.N(M,n);
+    const b = [[cx-w0/2,y0,cz-d0/2],[cx+w0/2,y0,cz-d0/2],[cx+w0/2,y0,cz+d0/2],[cx-w0/2,y0,cz+d0/2]];
+    const t = [[cx-w1/2,y1,cz-d1/2],[cx+w1/2,y1,cz-d1/2],[cx+w1/2,y1,cz+d1/2],[cx-w1/2,y1,cz+d1/2]];
+    const ctr = [cx,(y0+y1)/2,cz];
+    for (let i=0;i<4;i++){
+      const j=(i+1)%4, a=b[i], bb=b[j], c=t[j], d=t[i];
+      const u=[bb[0]-a[0],bb[1]-a[1],bb[2]-a[2]], v=[d[0]-a[0],d[1]-a[1],d[2]-a[2]];
+      let n=[u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]]; const l=Math.hypot(...n)||1; n=n.map(x=>x/l);
+      const mid=[(a[0]+c[0])/2-ctr[0],(a[1]+c[1])/2-ctr[1],(a[2]+c[2])/2-ctr[2]];
+      if (n[0]*mid[0]+n[1]*mid[1]+n[2]*mid[2] < 0) n=n.map(x=>-x);
+      const uu = i%2===0 ? [a[0],bb[0]] : [a[2],bb[2]];
+      this.quad(P(a),P(bb),P(c),P(d),N(n),col,m,[[uu[0],a[1]],[uu[1],bb[1]],[uu[1],c[1]],[uu[0],d[1]]]);
+    }
+    this.quad(P(t[0]),P(t[1]),P(t[2]),P(t[3]),N([0,1,0]),col,m,[[t[0][0],t[0][2]],[t[1][0],t[1][2]],[t[2][0],t[2][2]],[t[3][0],t[3][2]]]);
+    this.quad(P(b[0]),P(b[1]),P(b[2]),P(b[3]),N([0,-1,0]),col,m);
+  }
+  // extrude a star-shaped polygon (x,y) along z
+  prismZ(pts,z0,z1,col,m,M=null){
+    const P = p => this.P(M,p), N = n => this.N(M,n);
+    const cx = pts.reduce((s,p)=>s+p[0],0)/pts.length, cy = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+    for (let i=1;i<pts.length-1;i++){
+      const a=pts[0], b=pts[i], c=pts[i+1];
+      this.tri(P([a[0],a[1],z1]),P([b[0],b[1],z1]),P([c[0],c[1],z1]),N([0,0,1]),col,m,[a[0],a[1]],[b[0],b[1]],[c[0],c[1]]);
+      this.tri(P([a[0],a[1],z0]),P([c[0],c[1],z0]),P([b[0],b[1],z0]),N([0,0,-1]),col,m);
+    }
+    for (let i=0;i<pts.length;i++){
+      const a=pts[i], b=pts[(i+1)%pts.length]; let n=[b[1]-a[1], -(b[0]-a[0]), 0]; const l=Math.hypot(n[0],n[1])||1; n=[n[0]/l,n[1]/l,0];
+      const mx=(a[0]+b[0])/2-cx, my=(a[1]+b[1])/2-cy; if (n[0]*mx+n[1]*my<0) n=[-n[0],-n[1],0];
+      this.quad(P([a[0],a[1],z0]),P([b[0],b[1],z0]),P([b[0],b[1],z1]),P([a[0],a[1],z1]),N(n),col,m);
+    }
+  }
+}
+
+/* ================= palette ================= */
+const C = {
+  stone: lin('#e8dcc7'), stoneD: lin('#cdbd9f'), trim: lin('#f2e9d8'), plinth: lin('#bfb197'),
+  zinc: lin('#6b7887'), zincD: lin('#4f5a66'), chim: lin('#d8ccb6'), pot: lin('#a85f3a'),
+  green: lin('#2c5a50'), iron: lin('#1d1e23'), gold: lin('#c9a24f'), rib: lin('#a01b2e'),
+  glass: lin('#1b2332'), frame: lin('#efe6d6'), snow: lin('#f3f6fb'),
+  wall: lin('#f2b06c'), wallS: lin('#c27a42'), floor: lin('#6e4022'), ceil: lin('#b0703a'), curtain: lin('#f5e3c2'),
+  gift: lin('#8e1a2b'), giftB: lin('#21345a'), giftR: lin('#e8c67c'),
+  pine: lin('#2c4f3c'), pine2: lin('#3a6249'), trunk: lin('#4a3628'),
+  white: lin('#ffffff'), warm: lin('#ffd08a'), tag: lin('#fbf5e6'),
+};
+const MAT = (id, snow=0, wid=0, emi=0) => [id, snow, wid, emi];
+
+/* ================= the house ================= */
+const WINS = [
+  {d:3, cx:-4, yb:8.6, w:1.3, h:2.0, kind:'top'},
+  {d:6, cx: 0, yb:8.6, w:1.3, h:2.0, kind:'top'},
+  {d:1, cx: 4, yb:8.6, w:1.3, h:2.0, kind:'top'},
+  {d:5, cx:-4, yb:5.0, w:1.4, h:2.4, kind:'mid'},
+  {d:2, cx: 4, yb:5.0, w:1.4, h:2.4, kind:'mid'},
+  {d:7, cx:-4, yb:0.9, w:1.4, h:2.2, kind:'ground'},
+  {d:4, cx: 4, yb:0.9, w:1.4, h:2.2, kind:'ground'},
+  {d:8, cx: 0, yb:0.32, w:1.8, h:2.9, kind:'door'},
+];
+WINS.forEach(W => { W.arch = (W.kind === 'ground' || W.kind === 'door') ? W.w/2 : 0; });
+
+function buildHouse(G){
+  const S = MAT(STONE,1), T = MAT(STONE,1);
+  // body
+  G.box(-6,0,-9,6,11.2,-0.5,C.stone,S);
+  // front wall with real openings
+  const holes = WINS.map(W => [W.cx-W.w/2, W.yb, W.cx+W.w/2, W.yb+W.h+W.arch]);
+  const xs = [...new Set([-6,6,...holes.flatMap(h=>[h[0],h[2]])])].sort((a,b)=>a-b);
+  const ys = [...new Set([0,11.2,...holes.flatMap(h=>[h[1],h[3]])])].sort((a,b)=>a-b);
+  for (let i=0;i<xs.length-1;i++) for (let j=0;j<ys.length-1;j++){
+    const mx=(xs[i]+xs[i+1])/2, my=(ys[j]+ys[j+1])/2;
+    if (holes.some(h => mx>h[0]&&mx<h[2]&&my>h[1]&&my<h[3])) continue;
+    G.box(xs[i],ys[j],-0.5,xs[i+1],ys[j+1],0,C.stone,S);
+  }
+  // plinth, belt courses, quoins
+  G.box(-6.1,0,-9.1,6.1,0.45,0.12,C.plinth,S);
+  G.box(-6.15,4.35,-9.1,6.15,4.6,0.22,C.trim,T); G.box(-6.1,4.3,-9.05,6.1,4.36,0.14,C.stoneD,S);
+  G.box(-6.15,7.95,-9.1,6.15,8.2,0.2,C.trim,T); G.box(-6.1,7.9,-9.05,6.1,7.96,0.12,C.stoneD,S);
+  for (let y=4.6, k=0; y<7.9; y+=0.5, k++){ const w = k%2 ? .5 : .75; G.box(-6.06,y+.02,-.06-(k%2?0:.1),-6+w,y+.48,0.06,C.trim,T); G.box(6-w,y+.02,-.06,6.06,y+.48,0.06,C.trim,T); }
+  for (let y=8.2, k=0; y<11.2; y+=0.5, k++){ const w = k%2 ? .5 : .75; G.box(-6.06,y+.02,-.06,-6+w,y+.48,0.06,C.trim,T); G.box(6-w,y+.02,-.06,6.06,y+.48,0.06,C.trim,T); }
+  // cornice: stepped profile + dentils + modillions
+  G.box(-6.1,11.2,-9.1,6.1,11.35,0.12,C.trim,T);
+  G.box(-6.2,11.35,-9.2,6.2,11.5,0.25,C.stoneD,T);
+  for (let x=-6.1; x<6.1; x+=0.22) G.box(x,11.5,0.05,x+0.12,11.64,0.33,C.trim,T);
+  G.box(-6.3,11.5,-9.3,6.3,11.64,0.05,C.trim,T);
+  for (let x=-6.0; x<=6.0; x+=0.75) G.box(x-.07,11.64,0.1,x+.07,11.82,0.62,C.trim,T);
+  G.box(-6.45,11.82,-9.4,6.45,11.98,0.7,C.trim,T);
+  G.box(-6.5,11.98,-9.45,6.5,12.06,0.76,C.stoneD,T);
+  // mansard roof (zinc)
+  G.taper(0,12.06,-4.35,12.9,10.2,14.9,9.6,6.0,C.zinc,MAT(ZINC,1));
+  G.box(-4.9,14.9,-7.4,4.9,15.05,-1.3,C.zincD,MAT(ZINC,1));
+  // iron cresting on top
+  for (let x=-4.8; x<=4.8; x+=0.25) G.box(x-.015,15.05,-1.36,x+.015,15.3,-1.33,C.iron,MAT(IRON,1));
+  G.box(-4.85,15.28,-1.37,4.85,15.31,-1.32,C.iron,MAT(IRON,1));
+  // chimneys
+  [[-3.6,-4.5],[3.4,-5.5]].forEach(([x,z]) => {
+    G.box(x-.55,13,z-.45,x+.55,16.4,z+.45,C.chim,MAT(BRICK,1));
+    G.box(x-.65,16.4,z-.55,x+.65,16.6,z+.55,C.trim,T);
+    [-.25,.25].forEach(dx => G.cyl(x+dx,16.6,z,.12,.4,10,C.pot,MAT(PLAIN,1)));
+  });
+  // dormers on the front slope (slope runs from z≈0.75 at y12.06 to z≈-1.35 at y14.9)
+  [-3.6, 3.6].forEach(x => {
+    G.box(x-.85,12.06,-2.6,x+.85,14.0,0.15,C.trim,T);
+    G.prismZ(Array.from({length:13},(_,i)=>{const a=Math.PI*i/12; return [x+Math.cos(a)*1.0, 14.0+Math.sin(a)*0.55];}),-2.6,0.25,C.zinc,MAT(ZINC,1));
+    G.box(x-1.0,13.95,-2.6,x+1.0,14.05,0.25,C.trim,T);
+    G.box(x-.5,12.35,-0.05,x+.5,13.75,0.16,C.glass,MAT(GLASS,0,9));
+    G.box(x-.56,12.3,0.12,x+.56,12.38,0.24,C.trim,T);
+    G.box(x-.03,12.35,0.16,x+.03,13.75,0.19,C.frame,MAT(PLAIN));
+    G.box(x-.5,13.02,0.16,x+.5,13.08,0.19,C.frame,MAT(PLAIN));
+  });
+  // central oeil-de-boeuf with clock
+  G.box(-1.0,12.06,-2.6,1.0,14.1,0.18,C.trim,T);
+  G.prismZ(Array.from({length:15},(_,i)=>{const a=Math.PI*i/14; return [Math.cos(a)*1.15, 14.1+Math.sin(a)*0.7];}),-2.6,0.28,C.zinc,MAT(ZINC,1));
+  G.box(-1.15,14.05,-2.6,1.15,14.16,0.3,C.trim,T);
+  G.cyl(0,13.05,0.18,0.78,0.08,32,C.gold,MAT(GOLD),M4.chain(M4.T(0,13.05,0.18),M4.RX(Math.PI/2),M4.T(0,-13.05,-0.18)));
+  G.cyl(0,13.05,0.26,0.68,0.04,32,lin('#f7f1e4'),MAT(PLAIN),M4.chain(M4.T(0,13.05,0.26),M4.RX(Math.PI/2),M4.T(0,-13.05,-0.26)));
+  for (let i=0;i<12;i++){ const a=i/12*Math.PI*2; G.box(-.02,.5,-.01,.02,.6,.01,C.iron,MAT(PLAIN),M4.chain(M4.T(0,13.05,0.31),M4.RZ(-a))); }
+
+  // ---- openings ----
+  WINS.forEach(W => buildOpening(G, W));
+
+  // piano-nobile balcony with iron railing
+  G.box(-5.7,4.6,-0.1,5.7,4.95,1.15,C.trim,T);
+  G.box(-5.75,4.55,1.0,5.75,4.62,1.2,C.stoneD,T);
+  for (let x=-5.2; x<=5.2; x+=1.3) G.box(x-.12,4.05,0,x+.12,4.6,0.9,C.trim,T);
+  railing(G,-5.6,5.6,4.95,1.05,1.0);
+  // balconettes on the top floor
+  [-4,0,4].forEach(x => { G.box(x-1.05,8.4,-0.1,x+1.05,8.58,0.85,C.trim,T); railing(G,x-1.0,x+1.0,8.58,0.78,0.75); });
+  // medallion between the middle windows
+  G.cyl(0,6.2,0,1,0.1,40,C.trim,T,M4.chain(M4.T(0,6.2,0),M4.S(0.78,1.05,1),M4.RX(Math.PI/2),M4.T(0,-6.2,0)));
+  G.cyl(0,6.2,0.1,0.85,0.06,40,C.green,MAT(WOOD),M4.chain(M4.T(0,6.2,0.1),M4.S(0.78,1.05,1),M4.RX(Math.PI/2),M4.T(0,-6.2,-0.1)));
+  G.prismZ(Array.from({length:10},(_,i)=>{const a=i/10*Math.PI*2+Math.PI/2, r=i%2?0.14:0.36; return [Math.cos(a)*r, 6.2+Math.sin(a)*r];}).reverse().concat([[0,6.2]]).reverse(),0.15,0.2,C.gold,MAT(GOLD));
+  // steps
+  G.box(-1.6,0,0,1.6,0.16,0.9,C.plinth,S); G.box(-1.3,0.16,0,1.3,0.32,0.45,C.plinth,S);
+  // sconces by the door
+  [-1.6,1.6].forEach(x => {
+    G.box(x-.04,2.55,0,x+.04,2.62,0.32,C.iron,MAT(IRON));
+    G.box(x-.14,2.15,0.22,x+.14,2.55,0.5,C.iron,MAT(IRON));
+    G.box(x-.11,2.18,0.25,x+.11,2.52,0.47,C.warm,MAT(LAMP));
+    G.taper(x,2.55,0.36,.32,.32,2.72,.04,.04,C.iron,MAT(IRON,1));
+  });
+}
+
+function railing(G, x0, x1, y, z, h){
+  const I = MAT(IRON,1);
+  G.box(x0,y+h-.05,z-.04,x1,y+h,z+.04,C.iron,I);
+  G.box(x0,y+.08,z-.025,x1,y+.12,z+.025,C.iron,I);
+  for (let x=x0; x<=x1+1e-6; x+=0.11) G.box(x-.012,y,z-.012,x+.012,y+h,z+.012,C.iron,I);
+  for (let x=x0+.22; x<x1-.1; x+=0.44) G.torus(.09,.012,10,4,C.iron,I,M4.T(x,y+h*.55,z));
+}
+
+function buildOpening(G, W){
+  const {cx, yb, w, h, arch, kind, d} = W, x0 = cx-w/2, x1 = cx+w/2, yt = yb+h, T = MAT(STONE,1);
+  // arch spandrels inside the wall
+  if (arch) {
+    const r = arch, arc = s => Array.from({length:9},(_,i)=>{ const a = s ? Math.PI/2*(i/8) : Math.PI - Math.PI/2*(i/8); return [cx+Math.cos(a)*r, yt+Math.sin(a)*r]; });
+    G.prismZ([[x0,yt+r],...arc(false)],-0.5,0,C.stone,T);
+    G.prismZ([[x1,yt+r],...arc(true).reverse()],-0.5,0,C.stone,T);
+    // voussoirs
+    for (let i=0;i<=10;i++){
+      const a = Math.PI*i/10, kk = i===5;
+      const M = M4.chain(M4.T(cx,yt,0), M4.RZ(a - Math.PI/2));
+      G.box(-(kk?.13:.08), r+.02, -.02, (kk?.13:.08), r+(kk?.34:.24), kk?.14:.08, C.trim, T, M);
+    }
+    // fanlight glass + radial glazing bars
+    G.prismZ(Array.from({length:17},(_,i)=>{const a=Math.PI*i/16; return [cx+Math.cos(a)*r, yt+Math.sin(a)*r];}),-0.36,-0.32,C.glass,MAT(GLASS,0,d));
+    for (let i=1;i<4;i++){ const a=Math.PI*i/4; G.box(-.015,0,-.31,.015,r,-.28,C.frame,MAT(PLAIN),M4.chain(M4.T(cx,yt,0),M4.RZ(a-Math.PI/2))); }
+    G.box(x0,yt-.04,-.33,x1,yt+.03,-.27,C.frame,MAT(PLAIN));
+  }
+  // surround: jambs, sill, lintel/hood
+  if (kind !== 'door') {
+    G.box(x0-.18,yb-.02,-0.02,x0,yt+(arch?0:.05),0.07,C.trim,T);
+    G.box(x1,yb-.02,-0.02,x1+.18,yt+(arch?0:.05),0.07,C.trim,T);
+    G.box(x0-.3,yb-.16,-0.05,x1+.3,yb,0.22,C.trim,T);
+    for (const s of [-1,1]) G.box(cx+s*(w/2+.12)-.08,yb-.42,-0.02,cx+s*(w/2+.12)+.08,yb-.16,0.16,C.trim,T);
+  }
+  if (kind === 'top') {
+    G.box(x0-.22,yt+.05,-0.02,x1+.22,yt+.2,0.2,C.trim,T);
+    G.box(cx-.13,yt-.05,0,cx+.13,yt+.22,0.12,C.trim,T);
+  }
+  if (kind === 'mid') {
+    G.box(x0-.3,yt+.05,-0.02,x1+.3,yt+.22,0.26,C.trim,T);
+    G.prismZ([[x0-.35,yt+.22],[x1+.35,yt+.22],[cx,yt+.62]],-0.02,0.24,C.trim,T);
+    for (const s of [-1,1]) G.box(cx+s*(w/2+.24)-.07,yt-.35,-0.02,cx+s*(w/2+.24)+.07,yt+.05,0.2,C.trim,T);
+  }
+  if (kind === 'door') {
+    G.box(x0-.22,0.32,-0.02,x0,yt,0.1,C.trim,T); G.box(x1,0.32,-0.02,x1+.22,yt,0.1,C.trim,T);
+  }
+  // casement frame recessed in the opening
+  if (kind !== 'door') {
+    const z = -0.3, F = MAT(PLAIN);
+    G.box(x0,yb,z-.04,x0+.06,yt,z+.03,C.frame,F); G.box(x1-.06,yb,z-.04,x1,yt,z+.03,C.frame,F);
+    G.box(x0,yb,z-.04,x1,yb+.06,z+.03,C.frame,F); G.box(cx-.03,yb,z-.04,cx+.03,yt,z+.03,C.frame,F);
+    for (let k=1;k<3;k++) G.box(x0,yb+h*k/3-.02,z-.03,x1,yb+h*k/3+.02,z+.02,C.frame,F);
+    if (!arch) G.box(x0,yt-.06,z-.04,x1,yt,z+.03,C.frame,F);
+  }
+  // the warm room behind
+  const R = MAT(ROOM,0,d), rz0 = -0.5, rz1 = -2.6, ry1 = yt + arch + .3, rx0 = x0 - .5, rx1 = x1 + .5;
+  G.quad([rx0,yb-.1,rz1],[rx1,yb-.1,rz1],[rx1,ry1,rz1],[rx0,ry1,rz1],[0,0,1],C.wall,R);
+  G.quad([rx0,yb-.1,rz0],[rx0,yb-.1,rz1],[rx0,ry1,rz1],[rx0,ry1,rz0],[1,0,0],C.wallS,R);
+  G.quad([rx1,yb-.1,rz1],[rx1,yb-.1,rz0],[rx1,ry1,rz0],[rx1,ry1,rz1],[-1,0,0],C.wallS,R);
+  G.quad([rx0,yb-.1,rz0],[rx1,yb-.1,rz0],[rx1,yb-.1,rz1],[rx0,yb-.1,rz1],[0,1,0],C.floor,R);
+  G.quad([rx0,ry1,rz1],[rx1,ry1,rz1],[rx1,ry1,rz0],[rx0,ry1,rz0],[0,-1,0],C.ceil,R);
+  if (kind !== 'door') {
+    // curtains + a little table with a present
+    G.box(x0-.05,yb,-0.62,x0+.32,yt+arch,-0.55,C.curtain,MAT(ROOM,0,d));
+    G.box(x1-.32,yb,-0.62,x1+.05,yt+arch,-0.55,C.curtain,MAT(ROOM,0,d));
+    G.box(cx-.45,yb-.1,-1.6,cx+.45,yb+.55,-1.0,C.floor,R);
+    giftAt(G, cx, yb+.55, -1.3, .42, d);
+    G.sphere(cx+.3,yb+1.35,-2.3,.12,.12,.12,lin('#fff2c8'),MAT(ROOM,0,d));
+  } else {
+    // christmas tree in the hall
+    for (let k=0;k<5;k++) G.cyl(cx,yb+.1+k*.42,-1.6,.75-k*.13,.75,14,C.pine,MAT(ROOM,0,d),null,true,0.02);
+    const B = rng(5);
+    for (let k=0;k<22;k++){ const a=B()*6.28, hh=B()*1.9, r=(.7-hh*.3); G.sphere(cx+Math.cos(a)*r,yb+.35+hh,-1.6+Math.sin(a)*r,.05,.05,.05,B()<.5?C.giftR:lin('#d23a3a'),MAT(ROOM,0,d),null,5,4); }
+    G.sphere(cx,yb+2.35,-1.6,.09,.09,.04,lin('#ffe9a0'),MAT(ROOM,0,d),null,6,4);
+    giftAt(G, cx-.6, yb, -1.2, .35, d); giftAt(G, cx+.55, yb, -1.4, .3, d);
+  }
+}
+
+function giftAt(G, x, y, z, s, d){
+  const R = MAT(ROOM,0,d);
+  G.box(x-s/2,y,z-s/2,x+s/2,y+s*.8,z+s/2,(d%2?C.gift:C.giftB),R);
+  G.box(x-s*.55,y+s*.8,z-s*.55,x+s*.55,y+s*.9,z+s*.55,(d%2?C.gift:C.giftB),R);
+  G.box(x-s*.06,y,z-s*.56,x+s*.06,y+s*.92,z+s*.56,C.giftR,R);
+  G.box(x-s*.56,y,z-s*.06,x+s*.56,y+s*.92,z+s*.06,C.giftR,R);
+}
+
+/* ---- dynamic: shutter / door leaves, ribbons, clock hands ---- */
+function leafGeo(lw, lh, door){
+  const G = new Geo(), Wd = MAT(WOOD,0), t = 0.055;
+  G.box(0,0,-t,0.07,lh,0,C.green,Wd); G.box(lw-0.07,0,-t,lw,lh,0,C.green,Wd);
+  G.box(0.07,0,-t,lw-.07,0.09,0,C.green,Wd); G.box(0.07,lh-.09,-t,lw-.07,lh,0,C.green,Wd);
+  if (!door) {
+    G.box(0.07,lh*.45-.04,-t,lw-.07,lh*.45+.04,0,C.green,Wd);
+    for (let y=0.13; y<lh-0.1; y+=0.072){ if (Math.abs(y-lh*.45)<.07) continue; G.box(-(lw-.14)/2,-.034,-.006,(lw-.14)/2,.034,.006,C.green,Wd,M4.chain(M4.T(lw/2,y,-t/2),M4.RX(-0.6))); }
+  } else {
+    G.box(0.07,lh*.55,-t,lw-.07,lh*.55+.09,0,C.green,Wd);
+    G.box(0.07,0.09,-t*.6,lw-.07,lh*.55,-t*.4,C.green,Wd);
+    G.box(0.16,0.2,-t*.4,lw-.16,lh*.5,0.02,C.green,Wd);
+    G.box(0.07,lh*.55+.09,-t*.7,lw-.07,lh-.09,-t*.5,C.glass,MAT(GLASS,0,8));
+    G.box(lw/2-.02,lh*.55+.09,-t*.5,lw/2+.02,lh-.09,-t*.2,C.green,Wd);
+    G.box(.07,lh*.78-.02,-t*.5,lw-.07,lh*.78+.02,-t*.2,C.green,Wd);
+  }
+  return G;
+}
+function ribbonGeo(W){
+  const G = new Geo(), V = MAT(VELVET), {w,h,arch} = W, by = W.kind === 'door' ? .5 : .52;
+  const cy = W.yb + h*by, zf = .02;
+  G.box(-.075,W.yb-cy,zf,.075,W.yb+h-cy,zf+.03,C.rib,V);
+  G.box(-w/2-.03,-.075,zf,w/2+.03,.075,zf+.03,C.rib,V);
+  const s = W.kind === 'door' ? 1.9 : 1.55;
+  for (const sgn of [-1,1]){
+    G.torus(.15*s,.05*s,14,7,C.rib,V,M4.chain(M4.T(sgn*.15*s,.02,.1),M4.RZ(sgn*.25),M4.S(1,.62,.55)));
+    G.box(-.045*s,-.36*s,.06,.045*s,0,.1,C.rib,V,M4.chain(M4.T(sgn*.03,-.02,0),M4.RZ(sgn*.32)));
+  }
+  G.sphere(0,0,.1,.065*s,.075*s,.06*s,C.rib,V);
+  // number tag
+  G.box(-.15,-.19,0,.15,.19,.02,C.tag,MAT(TAG,0,W.d),M4.chain(M4.T(.21*s,-.36*s,.16),M4.RZ(-.18)),true);
+  return {G, cy};
+}
+
+/* ================= surroundings ================= */
+function pine(G, x, z, h, R, snowy=1){
+  const N = MAT(NEEDLE, snowy);
+  G.cyl(x,0,z,h*.035,h*.15,7,C.trunk,MAT(PLAIN));
+  const tiers = 6;
+  for (let i=0;i<tiers;i++){
+    const t = i/(tiers-1), y = h*(.12 + .13*i), r = h*(.36 - .27*t), hh = h*.3;
+    const col = mixA(C.pine, C.pine2, R()*.6);
+    G.cyl(x,y,z,r,hh*.25,12,col,N,null,false,r*.8);
+    G.cyl(x,y+hh*.25,z,r*.8,hh*.75,12,col,N,null,false,0.01);
+  }
+}
+
+function build101(G, cx, cz){
+  const Cm = MAT(CITY,0,0,1), col = lin('#7f97a3'), L = MAT(LAMP,0,0,1), lc = lin('#e9f2d0');
+  G.taper(cx,0,cz,24,24,42,20,20,col,Cm);
+  G.box(cx-11,42,cz-11,cx+11,46,cz+11,col,Cm);
+  G.torus(4,.9,18,6,col,MAT(PLAIN),M4.T(cx,30,cz+10.4));
+  let y = 46;
+  for (let i=0;i<8;i++){
+    G.taper(cx,y,cz,14.5,14.5,y+14,18.5,18.5,col,Cm);
+    G.box(cx-9.4,y+14,cz-9.4,cx+9.4,y+15,cz+9.4,col,Cm);
+    G.box(cx-9.45,y+14.9,cz+9.3,cx+9.45,y+15.3,cz+9.5,lc,L);
+    y += 15;
+  }
+  G.taper(cx,y,cz,10,10,y+13,8,8,col,Cm); y += 13;
+  G.box(cx-5,y,cz-5,cx+5,y+4,cz+5,col,Cm); y += 4;
+  G.box(cx-3,y,cz-3,cx+3,y+6,cz+3,col,Cm); y += 6;
+  G.cyl(cx,y,cz,1.2,26,8,col,MAT(PLAIN),null,true,0.4);
+  G.sphere(cx,y+26,cz,.8,.8,.8,lin('#ff6b5a'),L);
+}
+
+function buildWorld(){
+  const G = new Geo(), R = rng(7);
+  buildHouse(G);
+  // ground
+  G.quad([-3000,0,-3000],[3000,0,-3000],[3000,0,3000],[-3000,0,3000],[0,1,0],C.snow,MAT(GROUND,1));
+  // snow mounds
+  for (let i=0;i<26;i++){ const x=(R()<.5?-1:1)*(3+R()*14), z=-4+R()*14; if (Math.abs(x)<7 && z<2) continue; G.sphere(x,0,z,1+R()*2,.25+R()*.35,1+R()*1.6,C.snow,MAT(GROUND,1)); }
+  // fence with a gate opening
+  for (const s of [-1,1]){
+    [2.1,4.9,7.7].forEach(x => { G.box(s*x-.22,0,4.0,s*x+.22,1.35,4.44,C.stone,MAT(STONE,1)); G.box(s*x-.28,1.35,3.94,s*x+.28,1.48,4.5,C.trim,MAT(STONE,1)); G.sphere(s*x,1.56,4.22,.16,.12,.16,C.trim,MAT(STONE,1)); });
+    for (const [a,b] of [[2.1,4.9],[4.9,7.7]]) railing(G, s>0?a+.22:-b+.22, s>0?b-.22:-a-.22, 0.3, 4.22, 0.85);
+  }
+  // street lamp
+  G.cyl(7.0,0,3.2,.09,4.6,10,C.iron,MAT(IRON,1)); G.cyl(7.0,0,3.2,.22,.5,10,C.iron,MAT(IRON,1));
+  G.box(6.78,4.6,2.98,7.22,5.15,3.42,C.warm,MAT(LAMP)); G.taper(7.0,5.15,3.2,.6,.6,5.45,.08,.08,C.iron,MAT(IRON,1));
+  G.box(6.74,4.56,2.94,7.26,4.62,3.46,C.iron,MAT(IRON,1));
+  for (const [x,z] of [[6.76,2.96],[7.24,2.96],[6.76,3.44],[7.24,3.44]]) G.box(x-.02,4.6,z-.02,x+.02,5.15,z+.02,C.iron,MAT(IRON));
+  // pines
+  pine(G,-8.6,1.6,8.6,R); pine(G,9.4,0.6,9.4,R); pine(G,-10.8,-5,7,R); pine(G,11.2,-6.5,7.5,R); pine(G,-14,-1,8,R); pine(G,14.5,-2,6.5,R);
+  pine(G,-18,-8,9,R); pine(G,19,-10,8.5,R); pine(G,-12,6,5.5,R); pine(G,12.5,5.5,5,R);
+
+  // Taipei walk-ups (near background)
+  const conc = ['#cbbfaa','#b9b3a6','#d3c2a9','#a9a59c','#c9b6a3','#bfb9ad'].map(lin);
+  for (let i=0;i<60;i++){
+    const z = -60 - R()*110, side = R()<.5?-1:1, x = side*(14 + R()*80), w = 7+R()*8, d = 8+R()*6, h = 9 + Math.floor(R()*6)*3.1;
+    if (Math.abs(x) < 16 && z > -80) continue;
+    const col = conc[Math.floor(R()*conc.length)];
+    G.box(x-w/2,0,z-d/2,x+w/2,h,z+d/2,col,MAT(CITY));
+    for (let fy=3.1; fy<h-1; fy+=3.1) G.box(x-w/2-.05,fy-.12,z+d/2,x+w/2+.05,fy,z+d/2+.5,col,MAT(CITY));
+    if (R()<.7) { const tx=x+(R()-.5)*(w-3); G.cyl(tx,h+.9,z,.75,1.4,10,lin('#d8d4cc'),MAT(PLAIN)); for (const dx of [-.5,.5]) G.box(tx+dx-.05,h,z-.05,tx+dx+.05,h+.9,z+.05,C.iron,MAT(IRON)); }
+    if (R()<.5) G.box(x-w/2+.5,h,z-d/2+.5,x-w/2+3.5,h+2.4,z-d/2+3,lin('#8e9aa3'),MAT(PLAIN));
+    for (let k=0;k<3;k++) if (R()<.6) G.box(x+(R()-.5)*(w-1)-.35,3+Math.floor(R()*(h/3.1-1))*3.1,z+d/2+.5,x+(R()-.5)*0+.35,0,z+d/2+.9,lin('#e8e6e0'),MAT(PLAIN));
+  }
+  // city
+  for (let i=0;i<260;i++){
+    const z = -170 - Math.pow(R(),.7)*460, spread = 40 + (-z)*.55, x = (R()-.5)*2*spread;
+    const tall = R() < .06, w = 10 + R()*16, d = 10 + R()*16, h = tall ? 42 + R()*30 : 8 + R()*22;
+    const col = mixA(lin('#9aa4ad'), lin('#c9c3b5'), R());
+    G.box(x-w/2,0,z-d/2,x+w/2,h,z+d/2,col,MAT(CITY));
+    if (tall && R()<.6) G.box(x-w*.3,h,z-d*.3,x+w*.3,h+6,z+d*.3,col,MAT(CITY));
+  }
+  // landmarks
+  build101(G, 58, -430);
+  G.box(-46,0,-318,-30,118,-306,lin('#8a919a'),MAT(CITY)); G.box(-44,118,-316,-32,124,-308,lin('#8a919a'),MAT(CITY));
+  G.box(18,0,-360,32,96,-346,lin('#a7b0b8'),MAT(CITY)); G.taper(25,96,-353,14,14,112,2,2,lin('#a7b0b8'),MAT(CITY));
+  // ferris wheel
+  const fw = M4.chain(M4.T(-34,26,-170), M4.RY(.35));
+  G.torus(22,.5,48,6,lin('#c9ced6'),MAT(PLAIN),fw); G.torus(20.5,.25,48,4,lin('#c9ced6'),MAT(PLAIN),fw);
+  for (let i=0;i<24;i++){ const a=i/24*Math.PI*2; G.box(-.1,0,-.1,.1,21,.1,lin('#c9ced6'),MAT(PLAIN),M4.chain(fw,M4.RZ(a))); G.box(-1,-1.2,-1,1,1.2,1,lin(['#e46a6a','#e8c36a','#7cc0a0','#7aa6e0'][i%4]),MAT(PLAIN),M4.chain(fw,M4.T(Math.cos(a)*22,Math.sin(a)*22,0))); G.sphere(Math.cos(a)*22.6,Math.sin(a)*22.6,0,.5,.5,.5,lin(['#ff8a8a','#ffe08a','#9affd0','#9ac8ff'][i%4]),MAT(FAIRY),fw,5,4); }
+  G.box(-35,0,-171,-33,26,-169,lin('#c9ced6'),MAT(PLAIN),M4.chain(M4.T(-34,0,-170),M4.RZ(.35),M4.T(34,0,170)));
+  G.box(-35,0,-171,-33,26,-169,lin('#c9ced6'),MAT(PLAIN),M4.chain(M4.T(-34,0,-170),M4.RZ(-.35),M4.T(34,0,170)));
+  // grand hall on a hill
+  G.sphere(32,-8,-250,60,30,40,lin('#5d7a5a'),MAT(MOUNT));
+  const hall = (y0, w, d) => { G.box(32-w/2,y0,-250-d/2,32+w/2,y0+6,-250+d/2,lin('#b8423a'),MAT(PLAIN)); G.taper(32,y0+6,-250,w+8,d+8,y0+8,w+4,d+4,lin('#d99a3a'),MAT(PLAIN)); G.taper(32,y0+8,-250,w+4,d+4,y0+12,w*.45,d*.4,lin('#d99a3a'),MAT(PLAIN)); };
+  hall(19,40,16); hall(31,26,12); G.box(32-24,19,-250-9,32+24,20,-250+9,lin('#e8e0d0'),MAT(PLAIN));
+  // mountains
+  const ridge = (z0, depth, base, amp, seed, col) => {
+    const RR = rng(seed), ph = [RR()*6,RR()*6,RR()*6,RR()*6], nx = 140, nz = 8, x0 = -2600, x1 = 2600;
+    const H = (x, t) => { const p = base + amp*(.55*(.5+.5*Math.sin(x*.0021+ph[0])) + .3*(.5+.5*Math.sin(x*.0057+ph[1])) + .15*(.5+.5*Math.sin(x*.013+ph[2])) + .06*Math.sin(x*.031+ph[3])); return p*Math.pow(Math.sin(Math.PI*t), .7); };
+    const pt = (i,j) => { const x = x0+(x1-x0)*i/nx, t = j/nz; return [x, H(x,t), z0 - depth*t]; };
+    for (let i=0;i<nx;i++) for (let j=0;j<nz;j++){
+      const a=pt(i,j), b=pt(i+1,j), c=pt(i+1,j+1), dd=pt(i,j+1);
+      const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]], v=[dd[0]-a[0],dd[1]-a[1],dd[2]-a[2]];
+      let n=[u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]]; if (n[1]<0) n=n.map(q=>-q); const l=Math.hypot(...n); n=n.map(q=>q/l);
+      G.quad(a,b,c,dd,n,col,MAT(MOUNT));
+    }
+  };
+  ridge(-560,420,110,250,11,lin('#46705a'));
+  ridge(-900,560,190,320,12,lin('#3f6556'));
+  ridge(-1350,700,280,380,13,lin('#3e5b55'));
+  return G;
+}
+
+/* ================= WebGL ================= */
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl2', {antialias:true, powerPreference:'high-performance'});
+if (!gl) { document.getElementById('nogl').style.display = 'flex'; throw new Error('no webgl2'); }
+
+const COMMON = `
+float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+float hash3(vec3 p){ p=fract(p*.3183099+.1); p*=17.; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float noise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f); return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y); }
+float fbm(vec2 p){ float v=0.,a=.5; for(int i=0;i<5;i++){ v+=a*noise(p); p=p*2.03+vec2(1.7,9.2); a*=.5; } return v; }
+float fbm3(vec2 p){ float v=0.,a=.5; for(int i=0;i<3;i++){ v+=a*noise(p); p=p*2.07+vec2(5.1,1.3); a*=.5; } return v; }
+uniform vec3 u_zen,u_hor,u_glow,u_sunSky; uniform float u_gi;
+vec3 skyBase(vec3 rd){
+  float y=max(rd.y,0.);
+  vec3 c=mix(u_hor,u_zen,pow(y,.5));
+  float mu=max(dot(rd,u_sunSky),0.);
+  float hz=exp(-y*5.);
+  c+=u_glow*u_gi*(pow(mu,5.)*.45*(.35+hz)+pow(mu,40.)*.7);
+  return c;
+}
+vec3 aces(vec3 x){ return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.); }
+vec3 outCol(vec3 c){ return pow(aces(c),vec3(1./2.2)); }
+`;
+
+const VS = `#version 300 es
+in vec3 a_pos; in vec3 a_nrm; in vec3 a_col; in vec4 a_mat; in vec2 a_uv;
+uniform mat4 u_vp, u_model, u_lvp;
+out vec3 v_wp; out vec3 v_n; out vec3 v_col; out vec4 v_mat; out vec2 v_uv; out vec4 v_ls;
+void main(){ vec4 wp=u_model*vec4(a_pos,1.); v_wp=wp.xyz; v_n=mat3(u_model)*a_nrm; v_col=a_col; v_mat=a_mat; v_uv=a_uv; v_ls=u_lvp*wp; gl_Position=u_vp*wp; }`;
+
+const FS = `#version 300 es
+precision highp float; precision highp sampler2DShadow;
+in vec3 v_wp; in vec3 v_n; in vec3 v_col; in vec4 v_mat; in vec2 v_uv; in vec4 v_ls;
+uniform vec3 u_cam, u_L, u_Lcol, u_ambS, u_ambG; uniform float u_n, u_t, u_exp, u_fogD;
+uniform sampler2DShadow u_sm; uniform sampler2D u_tags;
+uniform float u_wg[10]; uniform vec4 u_pl[14]; uniform int u_npl;
+out vec4 o;
+${COMMON}
+float shadowF(vec3 N){
+  vec3 p=v_ls.xyz/v_ls.w*.5+.5;
+  if(p.x<0.||p.x>1.||p.y<0.||p.y>1.||p.z>1.) return 1.;
+  float b=.0008+.0025*(1.-abs(dot(N,u_L)));
+  float s=0.; vec2 tx=vec2(1./2048.);
+  for(int i=-1;i<=1;i++) for(int j=-1;j<=1;j++) s+=texture(u_sm,vec3(p.xy+vec2(i,j)*tx*1.3,p.z-b));
+  return s/9.;
+}
+void main(){
+  vec3 N=normalize(v_n);
+  int id=int(v_mat.x+.5); float snowy=v_mat.y; int wid=int(v_mat.z+.5);
+  vec3 wp=v_wp, V=normalize(u_cam-wp);
+  vec3 alb=v_col, E=vec3(0.); float spec=.04, shin=12.;
+  bool lit=true;
+  if(id==1){ // limestone
+    alb*=.93+.07*noise(wp.xy*2.3+wp.z)+.05*(noise(wp.xy*19.)-.5);
+    if(abs(N.z)>.6 && wp.z>-.6){
+      if(wp.y<4.3 && wp.y>.45){ float gy=fract((wp.y-.45)/.55), row=floor((wp.y-.45)/.55); float gx=fract((wp.x+mod(row,2.)*.6)/1.2);
+        alb*=mix(.62,1.,smoothstep(0.,.07,gy)*smoothstep(1.,.93,gy))*mix(.75,1.,smoothstep(0.,.02,gx)*smoothstep(1.,.98,gx)); }
+      else if(wp.y>4.6 && wp.y<11.2){ float gy=fract(wp.y/.42), row=floor(wp.y/.42); float gx=fract((wp.x+mod(row,2.)*.45)/.9);
+        alb*=mix(.86,1.,smoothstep(0.,.04,gy))*mix(.9,1.,smoothstep(0.,.02,gx)); }
+    }
+  } else if(id==17){ alb*=.9+.15*noise(wp.xy*8.); float gy=fract(wp.y/.22); alb*=mix(.8,1.,smoothstep(0.,.1,gy)); }
+  else if(id==2){ float s=fract((abs(N.x)>.5?wp.z:wp.x)/.43); alb*=1.-.35*exp(-pow((s-.5)*28.,2.)); alb*=.92+.12*noise(wp.xy*3.); spec=.35; shin=24.; }
+  else if(id==3){ spec=.35; shin=30.; }
+  else if(id==4){ spec=.9; shin=45.; }
+  else if(id==5){ alb*=.92+.12*noise(vec2(wp.x*40.,wp.y*3.)); spec=.12; shin=20.; }
+  else if(id==6){ vec3 r=reflect(-V,N); alb=vec3(.02); E=skyBase(r)*.35+vec3(1.,.66,.32)*u_wg[wid]*1.6; spec=.8; shin=80.; }
+  else if(id==7){ lit=false; float g=u_wg[wid]; E=alb*(.06+.05*(1.-u_n)+g*1.7); }
+  else if(id==8){ alb*=.97+.06*noise(wp.xz*.7); float tr=smoothstep(1.6,.9,abs(wp.x))*step(.3,wp.z)*smoothstep(30.,10.,wp.z); alb=mix(alb,alb*vec3(.82,.84,.9),tr*.5); spec=.25; shin=40.;
+    float gl=step(.996,hash(floor(wp.xz*45.)))*pow(max(dot(reflect(-u_L,N),V),0.),3.); E+=u_Lcol*gl*2.; }
+  else if(id==9){ alb*=.75+.5*noise(wp.xy*9.+wp.z*3.); }
+  else if(id==10){ alb*=.9+.15*noise(wp.xy*.3+wp.z*.1);
+    if(abs(N.y)<.5){ float u=abs(N.z)>.5?wp.x:wp.z; vec2 g=vec2(u/2.4,wp.y/3.1); vec2 f=fract(g), c=floor(g);
+      float w=smoothstep(.28,.32,f.x)*smoothstep(.72,.68,f.x)*smoothstep(.36,.4,f.y)*smoothstep(.78,.74,f.y)*step(1.,wp.y);
+      alb=mix(alb,alb*.7+vec3(.02,.03,.05),w*.45);
+      float on=step(.64,hash(c+floor(wp.zx*.05)*7.13));
+      E+=vec3(1.,.7,.38)*w*on*u_n*(.45+.5*hash(c*1.7));
+      spec=.15*w; shin=30.; }
+    E+=v_col*v_mat.w*0.; }
+  else if(id==11){ alb*=.7+.45*fbm3(wp.xz*.01+wp.y*.004); }
+  else if(id==12){ float rim=pow(1.-max(dot(N,V),0.),2.); alb*=.75+.9*rim; spec=.2; shin=10.; }
+  else if(id==13){ vec3 t=texture(u_tags,vec2((float(wid-1)+clamp(v_uv.x,0.,1.))/8.,clamp(v_uv.y,0.,1.))).rgb; alb=pow(t,vec3(2.2)); }
+  else if(id==14){ lit=false; E=alb*(.25+u_n*3.2)*(v_mat.w>.5?.6:1.); }
+  else if(id==16){ lit=false; E=alb*u_n*(1.8+1.4*sin(u_t*2.5+hash(wp.xy*3.1)*30.)); }
+  if(snowy>.5){ float sn=smoothstep(.62,.86,N.y+(noise(wp.xz*5.+wp.y)-.5)*.3); alb=mix(alb,vec3(.9,.92,.97),sn); spec=mix(spec,.2,sn); shin=mix(shin,40.,sn); }
+  vec3 c=E;
+  if(lit){
+    float sh=shadowF(N);
+    float nl=max(dot(N,u_L),0.);
+    vec3 amb=mix(u_ambG,u_ambS,N.y*.5+.5);
+    float ao=(id==1||id==2)?mix(.72,1.,smoothstep(-.5,.1,wp.z)):1.;
+    vec3 H=normalize(u_L+V);
+    vec3 pl=vec3(0.);
+    for(int i=0;i<14;i++){ if(i>=u_npl) break; vec3 d=u_pl[i].xyz-wp; float dl=length(d); float a=u_pl[i].w/(1.+dl*dl*1.4); pl+=vec3(1.,.7,.4)*a*max(dot(N,d/dl),0.); }
+    c+=alb*(amb*ao+u_Lcol*nl*sh+pl)+u_Lcol*spec*pow(max(dot(N,H),0.),shin)*sh*nl;
+  }
+  float dist=length(wp-u_cam);
+  float f=1.-exp(-dist*u_fogD);
+  c=mix(c,skyBase(-V)*1.02,f);
+  o=vec4(outCol(c*u_exp),1.);
+}`;
+
+const SKY_VS = `#version 300 es
+in vec2 a_p; out vec2 v_p; void main(){ v_p=a_p; gl_Position=vec4(a_p,.9999,1.); }`;
+const SKY_FS = `#version 300 es
+precision highp float;
+in vec2 v_p; out vec4 o;
+uniform mat4 u_ivp; uniform vec3 u_cam; uniform float u_t,u_n,u_exp;
+uniform vec3 u_moonSky,u_moonL; uniform float u_sunVis,u_moonVis; uniform vec3 u_sunDisk;
+uniform vec3 u_cl,u_cs; uniform float u_cover,u_cA;
+${COMMON}
+void main(){
+  vec4 pp=u_ivp*vec4(v_p,1.,1.); vec3 rd=normalize(pp.xyz/pp.w-u_cam);
+  vec3 col=skyBase(rd);
+  float up=smoothstep(-.02,.12,rd.y);
+  // milky way + stars
+  if(u_n>.01){
+    vec3 mwN=normalize(vec3(.78,.42,.18)); float dd=dot(rd,mwN);
+    vec3 t1=normalize(cross(mwN,vec3(0,0,1))); float sb=dot(rd,t1);
+    float band=exp(-dd*dd*22.);
+    float dust=fbm(vec2(sb*4.,dd*9.)+3.);
+    float lanes=smoothstep(.5,.72,fbm(vec2(sb*7.,dd*26.)+11.));
+    col+=vec3(.5,.56,.8)*band*(.3+.7*dust)*(1.-.7*lanes*smoothstep(.2,.6,band))*.085*u_n*up;
+    col+=vec3(1.,.86,.72)*exp(-dd*dd*70.)*smoothstep(.45,.8,dust)*.03*u_n*up;
+    vec3 q=rd*230.; vec3 id=floor(q); vec3 f=fract(q)-.5; float h=hash3(id);
+    float thr=.988-band*.02;
+    if(h>thr){ float r=length(f); float tw=.65+.35*sin(u_t*(1.5+h*3.)+h*90.); vec3 sc=mix(vec3(.75,.85,1.),vec3(1.,.88,.75),hash3(id+3.)); col+=sc*smoothstep(.22,0.,r)*(h-thr)*(55./(1.-thr+.001))*.02*tw*u_n*up; }
+  }
+  // moon
+  float md=dot(rd,u_moonSky);
+  if(u_moonVis>0.){
+    vec3 mz=u_moonSky; vec3 mx=normalize(cross(mz,vec3(0,1,0))); vec3 my=cross(mx,mz);
+    float mr=.024; vec2 mp=vec2(dot(rd,mx),dot(rd,my))/mr; float rr=length(mp);
+    col+=vec3(.55,.65,1.)*u_moonVis*(.12*exp(-acos(clamp(md,-1.,1.))*28.)+.04*exp(-acos(clamp(md,-1.,1.))*7.));
+    if(md>0.&&rr<1.){
+      vec3 n=vec3(mp,sqrt(1.-rr*rr));
+      float l=max(dot(n,u_moonL),0.);
+      float maria=fbm(mp*1.8+vec2(4.,2.)); float cr=fbm(mp*6.+9.);
+      vec3 alb=vec3(.93,.92,.88)*(1.-.38*smoothstep(.45,.68,maria))*(.82+.3*cr);
+      vec3 mc=alb*(l*2.4+.015)+vec3(.02,.025,.04);
+      col=mix(col,mc,smoothstep(1.,.96,rr)*u_moonVis);
+    }
+  }
+  // sun
+  float sa=acos(clamp(dot(rd,u_sunSky),-1.,1.));
+  if(u_sunVis>0.){
+    float disk=smoothstep(.0125,.0105,sa);
+    col+=u_sunDisk*disk*(1.-.45*pow(min(sa/.012,1.),2.))*18.*u_sunVis;
+    col+=u_sunDisk*u_sunVis*(exp(-sa*55.)*.9+exp(-sa*14.)*.18);
+  }
+  // clouds
+  if(rd.y>.005){
+    vec2 uv=rd.xz/(rd.y+.07)*.9+vec2(u_t*.0025,u_t*.0008);
+    float d=fbm(uv*1.4)+.3*fbm3(uv*5.+7.);
+    float a=smoothstep(u_cover,u_cover+.3,d);
+    if(a>.001){
+      vec2 sp=u_sunSky.xz/(max(u_sunSky.y,.02)+.07)*.9;
+      vec2 dir=normalize(sp-(uv-vec2(u_t*.0025,u_t*.0008))+1e-4)*.05;
+      float d2=fbm((uv+dir)*1.4)+.3*fbm3((uv+dir)*5.+7.);
+      float occ=clamp((d2-d)*3.5+.45,0.,1.);
+      vec3 cc=mix(u_cl,u_cs,occ*.85+smoothstep(.4,.9,d)*.15);
+      float mu=max(dot(rd,u_sunSky),0.);
+      cc+=u_glow*u_gi*pow(mu,10.)*(1.-a)*2.2;
+      cc+=vec3(.6,.7,1.)*u_moonVis*pow(max(md,0.),40.)*(1.-a)*.4;
+      float fade=smoothstep(.0,.22,rd.y);
+      col=mix(col,cc,a*fade*u_cA);
+    }
+  }
+  o=vec4(outCol(col*u_exp),1.);
+}`;
+
+const SH_VS = `#version 300 es
+in vec3 a_pos; uniform mat4 u_lvp, u_model; void main(){ gl_Position=u_lvp*u_model*vec4(a_pos,1.); }`;
+const SH_FS = `#version 300 es
+precision mediump float; out vec4 o; void main(){ o=vec4(1.); }`;
+
+function prog(vs, fs){
+  const mk = (t,s) => { const sh = gl.createShader(t); gl.shaderSource(sh,s); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
+  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
+  gl.bindAttribLocation(p,0,'a_pos'); gl.bindAttribLocation(p,1,'a_nrm'); gl.bindAttribLocation(p,2,'a_col'); gl.bindAttribLocation(p,3,'a_mat'); gl.bindAttribLocation(p,4,'a_uv'); gl.bindAttribLocation(p,0,'a_p');
+  gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  const U = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let i=0;i<n;i++){ const info = gl.getActiveUniform(p,i); const nm = info.name.replace('[0]',''); U[nm] = gl.getUniformLocation(p, info.name); }
+  return {p, U};
+}
+const P_MAIN = prog(VS, FS), P_SKY = prog(SKY_VS, SKY_FS), P_SH = prog(SH_VS, SH_FS);
+
+function upload(G){
+  const data = new Float32Array(G.d), vao = gl.createVertexArray(), buf = gl.createBuffer();
+  gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  const st = 15*4; [[0,3,0],[1,3,3],[2,3,6],[3,4,9],[4,2,13]].forEach(([l,n,o]) => { gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l,n,gl.FLOAT,false,st,o*4); });
+  gl.bindVertexArray(null);
+  return {vao, count: data.length/15, model: M4.id()};
+}
+const skyVAO = (() => { const v = gl.createVertexArray(), b = gl.createBuffer(); gl.bindVertexArray(v); gl.bindBuffer(gl.ARRAY_BUFFER,b); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0); gl.bindVertexArray(null); return v; })();
+
+// shadow map
+const SM = 2048;
+const smTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, smTex);
+gl.texStorage2D(gl.TEXTURE_2D, 1, gl.DEPTH_COMPONENT24, SM, SM);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+const smFB = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, smFB); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, smTex, 0);
+gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+// number tags texture
+const tagTex = (() => {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 64; const x = c.getContext('2d');
+  for (let i=0;i<8;i++){ x.fillStyle = '#fbf5e6'; x.fillRect(i*64,0,64,64); x.strokeStyle = '#b59a64'; x.lineWidth = 3; x.strokeRect(i*64+5,5,54,54);
+    x.fillStyle = '#6a1422'; x.font = 'italic 600 40px Georgia,serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(String(i+1), i*64+32, 35); }
+  const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c); gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  return t;
+})();
+
+/* ================= build scene ================= */
+const world = upload(buildWorld());
+const dyn = [];   // dynamic meshes
+WINS.forEach(W => {
+  const door = W.kind === 'door', lw = W.w/2 + .03, lh = W.h + (door ? 0 : .04), yb = W.yb - (door ? 0 : .02);
+  const leaf = upload(leafGeo(lw, lh, door));
+  const leafR = upload((() => { const g = leafGeo(lw, lh, door); for (let i=0;i<g.d.length;i+=15){ g.d[i] = lw - g.d[i]; g.d[i+3] = -g.d[i+3]; } return g; })());
+  const zf = door ? 0.0 : 0.13;
+  W.L = {mesh: leaf, hinge:[W.cx-W.w/2-.03, yb, zf]};
+  W.R = {mesh: leafR, hinge:[W.cx+W.w/2+.03, yb, zf]};
+  const rb = ribbonGeo(W); W.rib = {mesh: upload(rb.G), c:[W.cx, rb.cy, zf + (door ? .0 : .0)]};
+  W.state = opened.has(W.d) ? 1 : 0; W.t0 = -1e9;
+  dyn.push(W.L.mesh, W.R.mesh, W.rib.mesh);
+});
+const hands = [0.42, 0.6].map((len,i) => { const g = new Geo(); g.box(-.025-.01*i,-.05,0,.025+.01*i,len,.03,C.iron,MAT(IRON)); return upload(g); });
+
+/* ================= time of day ================= */
 const KF = [
-  [0,    {zen:'#04071a',hor:'#172650',glow:'#2b3c78',gi:.12,dark:'#060a1c',cl:'#46527e',cs:'#141a34',ca:.5, tint:'#5f6b96',n:1}],
-  [5.3,  {zen:'#0a1030',hor:'#2c3468',glow:'#6a5a8e',gi:.28,dark:'#0d1230',cl:'#5c618c',cs:'#22284a',ca:.55,tint:'#69709a',n:.92}],
-  [6.4,  {zen:'#2c4688',hor:'#f6b28a',glow:'#ff9456',gi:.95,dark:'#363a5e',cl:'#ffcaa2',cs:'#7a6890',ca:.9, tint:'#f6c4ab',n:.35}],
-  [7.6,  {zen:'#4a7fc8',hor:'#f0d8c0',glow:'#ffd6a8',gi:.55,dark:'#4f6286',cl:'#fff5ea',cs:'#a8b2ca',ca:.95,tint:'#fff0e2',n:.04}],
-  [12,   {zen:'#3b7bcf',hor:'#bad8f0',glow:'#fff6e2',gi:.35,dark:'#506689',cl:'#ffffff',cs:'#b3c1d8',ca:.9, tint:'#ffffff',n:0}],
-  [15.9, {zen:'#477dc6',hor:'#e2d4c2',glow:'#ffdcae',gi:.5, dark:'#52628a',cl:'#fff3e2',cs:'#a9b0c6',ca:.95,tint:'#fff3e6',n:.03}],
-  [17.3, {zen:'#3a4890',hor:'#f79c66',glow:'#ff7434',gi:1,  dark:'#3a3658',cl:'#ffb07a',cs:'#6a5278',ca:.95,tint:'#ffcda6',n:.35}],
-  [18.2, {zen:'#181d4e',hor:'#b2586e',glow:'#d24c78',gi:.55,dark:'#1b1a38',cl:'#c66e8a',cs:'#3a2e56',ca:.8, tint:'#a593b8',n:.75}],
-  [19.5, {zen:'#060a20',hor:'#1f2e5e',glow:'#34447e',gi:.18,dark:'#070b20',cl:'#3e4a76',cs:'#151b36',ca:.55,tint:'#5c6894',n:1}],
+  [0,    {zen:'#02040e',hor:'#0f1a3c',glow:'#22305e',gi:.12,sun:'#ffd6b0',sunI:0,  aS:'#2e3f72',aG:'#1c2445',aI:.5, cl:'#2c3760',cs:'#0e1328',cover:.56,ca:.35,n:1,  ex:1.25}],
+  [5.4,  {zen:'#060a22',hor:'#2a2c58',glow:'#6a4a78',gi:.3, sun:'#ffb080',sunI:0,  aS:'#3a3f74',aG:'#24264a',aI:.5, cl:'#565a86',cs:'#1e2244',cover:.52,ca:.6, n:.9, ex:1.2}],
+  [6.45, {zen:'#2a4282',hor:'#f2a47c',glow:'#ff8a4a',gi:1.2,sun:'#ffa86e',sunI:1.5,aS:'#8a90c4',aG:'#6a5a62',aI:.55,cl:'#ffc49a',cs:'#7a6690',cover:.5, ca:.95,n:.3, ex:1.0}],
+  [7.8,  {zen:'#3a72c0',hor:'#e2d2c2',glow:'#ffcf9a',gi:.6, sun:'#ffe2c2',sunI:2.0,aS:'#a8c4ee',aG:'#c2b9ab',aI:.46,cl:'#fff6ec',cs:'#a6b0c8',cover:.5, ca:.95,n:0,  ex:1.0}],
+  [12,   {zen:'#2a63c4',hor:'#a4c6ea',glow:'#fff4dc',gi:.35,sun:'#fff6ea',sunI:2.1,aS:'#a8c8f4',aG:'#c9c7c0',aI:.48,cl:'#ffffff',cs:'#aebdd6',cover:.5, ca:.92,n:0,  ex:1.0}],
+  [15.8, {zen:'#3a72c0',hor:'#ddd2c4',glow:'#ffd8a4',gi:.55,sun:'#ffe8cc',sunI:2.0,aS:'#a6c0ea',aG:'#c6bbad',aI:.46,cl:'#fff2e2',cs:'#a8aec6',cover:.5, ca:.95,n:0,  ex:1.0}],
+  [17.25,{zen:'#33428a',hor:'#f5905e',glow:'#ff6a2a',gi:1.3,sun:'#ff9858',sunI:1.5,aS:'#7c7eb4',aG:'#6a5058',aI:.55,cl:'#ffae78',cs:'#6a5078',cover:.5, ca:.95,n:.3, ex:1.0}],
+  [18.25,{zen:'#12164a',hor:'#a24e6a',glow:'#c8406a',gi:.6, sun:'#b07090',sunI:0,  aS:'#3e3e76',aG:'#2a2444',aI:.55,cl:'#c06a88',cs:'#38294f',cover:.5, ca:.8, n:.75,ex:1.15}],
+  [19.6, {zen:'#03061a',hor:'#172552',glow:'#283872',gi:.16,sun:'#ffd6b0',sunI:0,  aS:'#2e3f74',aG:'#1c2446',aI:.5, cl:'#2e3962',cs:'#10152c',cover:.56,ca:.35,n:1,  ex:1.25}],
   [24, null],
 ];
 KF[KF.length-1][1] = KF[0][1];
-function sample(h) {
-  h = ((h % 24) + 24) % 24;
-  let i = 0; while (i < KF.length-2 && h >= KF[i+1][0]) i++;
-  const [h0,a] = KF[i], [h1,b] = KF[i+1];
-  let t = (h - h0) / (h1 - h0); t = t*t*(3-2*t);
-  const o = {}; for (const k in a) o[k] = typeof a[k] === 'number' ? a[k] + (b[k]-a[k])*t : mix(a[k], b[k], t);
+function sample(h){
+  h = ((h%24)+24)%24; let i = 0; while (i < KF.length-2 && h >= KF[i+1][0]) i++;
+  const [h0,a] = KF[i], [h1,b] = KF[i+1]; let t = (h-h0)/(h1-h0); t = t*t*(3-2*t);
+  const o = {}; for (const k in a) o[k] = typeof a[k] === 'number' ? a[k]+(b[k]-a[k])*t : mixA(lin(a[k]), lin(b[k]), t);
   return o;
 }
-const SUNRISE = 6.35, SUNSET = 17.4;
-function sunInfo(h) {
-  const hh = ((h % 24) + 24) % 24;
-  const s = (hh - SUNRISE) / (SUNSET - SUNRISE);            // 0..1 during day
-  const ms = ((hh - (SUNSET + .3) + 24) % 24) / (24 - (SUNSET - SUNRISE) - .6); // moon 0..1 at night
-  return { s, up: s > 0 && s < 1, elev: s > 0 && s < 1 ? Math.sin(Math.PI*s) : 0, ms, moonUp: ms > 0 && ms < 1 };
+const SUNRISE = 6.4, SUNSET = 17.35;
+function moonPhase(date){ const ref = Date.UTC(2000,0,6,18,14); return (((date - ref)/864e5/29.530588853) % 1 + 1) % 1; }
+const norm = v => { const l = Math.hypot(...v); return v.map(x => x/l); };
+
+let ENV = null;
+function computeEnv(h){
+  const st = sample(h), hh = ((h%24)+24)%24;
+  const s = (hh - SUNRISE)/(SUNSET - SUNRISE), up = s > -0.04 && s < 1.04;
+  const elev = Math.sin(Math.PI*clamp(s,0,1));
+  // where the sun appears in the sky (in front of us), and where its light comes from (over our shoulder)
+  const sAz = (s - .5) * 0.62, sEl = clamp(s,0,1)*0+(-0.05 + 0.48*elev) + (s<0||s>1 ? -0.08 : 0);
+  const sunSky = norm([Math.sin(sAz), Math.sin(sEl), -Math.cos(sAz)]);
+  const sunL = norm([-Math.cos(Math.PI*clamp(s,0,1)) * 1.1, .25 + .9*elev, .75]);
+  const ms = ((hh - (SUNSET+.4) + 24) % 24) / (24 - (SUNSET-SUNRISE) - .8), mUp = ms > 0 && ms < 1;
+  const mel = Math.sin(Math.PI*clamp(ms,0,1));
+  const moonSky = norm([Math.sin((ms-.5)*.6), Math.sin(-.02 + .5*mel), -Math.cos((ms-.5)*.6)]);
+  const moonLdir = norm([-Math.cos(Math.PI*clamp(ms,0,1)), .35+.8*mel, .8]);
+  const ph = moonPhase(dayDate(1).getTime() + 0), phase = moonPhase(Date.now());
+  const p = PREVIEW ? moonPhase(dayDate(1).getTime()) : phase;
+  const moonL = norm([Math.sin(2*Math.PI*p), .05, -Math.cos(2*Math.PI*p)]);
+  const moonBright = .5 - .5*Math.cos(2*Math.PI*p);
+  const sunVis = up ? sstep(-.02, .04, Math.min(s, 1-s)) : 0;
+  const moonVis = mUp ? sstep(0, .05, Math.min(ms, 1-ms)) * (.35 + .65*st.n) : 0;
+  const useSun = st.sunI > .05;
+  const L = useSun ? sunL : moonLdir;
+  const Lcol = useSun ? st.sun.map(v => v*st.sunI) : [.55*.32*moonBright+.02, .65*.32*moonBright+.025, .9*.32*moonBright+.04].map(v=>v*moonVis);
+  const sunDisk = mixA(lin('#ff9a50'), lin('#fff4e0'), sstep(0, .5, elev));
+  return {st, sunSky, moonSky, moonL, L, Lcol, sunVis, moonVis, sunDisk, h};
 }
 
-/* ================= house colours (daylight) ================= */
-const BASE = {
-  facade:'#efe4d1', facadeD:'#d2c2a7', trim:'#f8f1e4', roof:'#5f6f82', roofD:'#435062', roofL:'#8798ac',
-  shutter:'#2d5a50', shutterD:'#1b3a33', shutterL:'#4f8174', iron:'#23242b', gold:'#cca75c',
-  snow:'#fbfcff', snowD:'#c5d0e6', green:'#2b5638', green2:'#477a4e', berry:'#be2633', trunk:'#4a382e',
-  pineL:'#47755f', pineD:'#1c3830', rib:'#a51e30', ribD:'#5a0c18', ribL:'#e3646f'
-};
+/* ================= camera ================= */
+let W_ = 0, H_ = 0, DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+let VP = M4.id(), IVP = M4.id(), CAM = [0,3,44];
+function resize(){
+  W_ = innerWidth; H_ = innerHeight;
+  canvas.width = Math.round(W_*DPR); canvas.height = Math.round(H_*DPR);
+  snowC.width = W_*DPR; snowC.height = H_*DPR; sx.setTransform(DPR,0,0,DPR,0,0);
+  makeFlakes();
+}
+function camera(t){
+  const asp = W_/H_, fy = 42*Math.PI/180, tv = Math.tan(fy/2);
+  const dW = 8.2/(tv*asp), dH = 9.4/tv;
+  const dist = clamp(Math.max(dW, dH), 26, 60);
+  const sway = .18*Math.sin(t*.07);
+  CAM = [sway, 3.0, dist];
+  const tgt = [0, 10.2 + (dist-40)*.02, 0];
+  const V = M4.look(CAM, tgt, [0,1,0]), P = M4.persp(fy, asp, .3, 5000);
+  VP = M4.mul(P, V); IVP = M4.inv(VP);
+}
 
-/* ================= scene ================= */
-const LAYOUT = { // day: [cx, y, w, h]
-  1:[265,322,34,62], 2:[265,420,34,66], 3:[135,322,34,62], 4:[270,544,34,74],
-  5:[135,420,34,66], 6:[200,322,34,62], 7:[130,544,34,74], 8:[200,564,48,122],
-};
-
-function ridge(seed, x0, x1, base, amp, step, freqs) {
-  const R = rng(seed), ph = freqs.map(() => R()*6.28);
-  let d = `M${x0} 900L${x0} `;
-  for (let x = x0; x <= x1; x += step) {
-    let y = base;
-    freqs.forEach(([f,a],i) => { y -= amp*a*(0.5 + 0.5*Math.sin(x*f + ph[i])); });
-    d += `${x===x0?'':'L'+x+' '}${f1(y)}`;
+/* ================= interaction ================= */
+const WGLOW = new Float32Array(10);
+function project(p){ const q = M4.xf(VP, p); return [(q[0]*.5+.5)*W_, (1-(q[1]*.5+.5))*H_]; }
+function hitWindow(x, y){
+  for (const W of WINS){
+    const a = project([W.cx-W.w/2-.25, W.yb-.2, .2]), b = project([W.cx+W.w/2+.25, W.yb+W.h+W.arch+.2, .2]);
+    if (x >= Math.min(a[0],b[0]) && x <= Math.max(a[0],b[0]) && y >= Math.min(a[1],b[1]) && y <= Math.max(a[1],b[1])) return W;
   }
-  return d + `L${x1} 900Z`;
-}
-
-function tower(x, top, w, cls, R, lights) {
-  const h = 700 - top; let s = `<rect class="${cls}" x="${x}" y="${top}" width="${w}" height="${h}"/>`;
-  const k = R();
-  if (k < .25) s += `<rect class="${cls}" x="${f1(x+w*.2)}" y="${top-8}" width="${f1(w*.6)}" height="9"/><rect class="${cls}" x="${f1(x+w*.48)}" y="${top-26}" width="1.2" height="20"/>`;
-  else if (k < .45) s += `<path class="${cls}" d="M${x} ${top}L${f1(x+w*.5)} ${f1(top-w*.55)}L${x+w} ${top}Z"/>`;
-  else if (k < .6) s += `<rect class="${cls}" x="${f1(x+w*.1)}" y="${top-5}" width="${f1(w*.8)}" height="6"/><rect class="${cls}" x="${f1(x+w*.25)}" y="${top-10}" width="${f1(w*.5)}" height="6"/>`;
-  s += `<rect class="fL" x="${x}" y="${top}" width="${f1(w*.3)}" height="${h}"/><rect class="fR" x="${f1(x+w*.82)}" y="${top}" width="${f1(w*.18)}" height="${h}"/>`;
-  for (let yy = top + 7; yy < 660; yy += 8) for (let xx = x + 3; xx < x + w - 4; xx += 6)
-    if (R() < .3) lights.push(`<rect x="${f1(xx)}" y="${yy}" width="2.6" height="1.8" fill="#ffd894" fill-opacity="${(.4+R()*.6).toFixed(2)}"/>`);
-  return s;
-}
-
-function taipei101(cx, base, cls, lights) {
-  let p = '', sh = '', y = base;
-  p += `M${cx-21} ${y}L${cx-18} ${y-92}L${cx+18} ${y-92}L${cx+21} ${y}Z`; sh += `M${cx-21} ${y}L${cx-18} ${y-92}L${cx-7} ${y-92}L${cx-8} ${y}Z`;
-  y -= 92;
-  p += `M${cx-20} ${y}h40v-7h-40Z`; y -= 7;
-  for (let i = 0; i < 8; i++) {
-    const t = 40;
-    p += `M${cx-13} ${y}L${cx-18} ${y-t}L${cx+18} ${y-t}L${cx+13} ${y}Z`;
-    sh += `M${cx-13} ${y}L${cx-18} ${y-t}L${cx-7} ${y-t}L${cx-5} ${y}Z`;
-    lights.push(`<rect x="${cx-17}" y="${y-t-1.6}" width="34" height="1.3" fill="#fff0c8"/>`);
-    for (let r = 0; r < 4; r++) lights.push(`<rect x="${f1(cx-11.5-r*.9)}" y="${y-8-r*8}" width="${f1(23+r*1.8)}" height="1.1" fill="#ffd994" fill-opacity="${.35+.2*(r%2)}"/>`);
-    y -= t; p += `M${cx-19} ${y}h38v-2.6h-38Z`; y -= 2.6;
-  }
-  p += `M${cx-11} ${y}L${cx-9} ${y-30}L${cx+9} ${y-30}L${cx+11} ${y}Z`; y -= 30;
-  p += `M${cx-6.5} ${y}h13v-11h-13Z`; y -= 11;
-  p += `M${cx-4} ${y}h8v-8h-8Z`; y -= 8;
-  p += `M${cx-1.4} ${y}L${cx-.4} ${y-42}L${cx+.4} ${y-42}L${cx+1.4} ${y}Z`;
-  lights.push(`<circle cx="${cx}" cy="${y-42}" r="1.7" fill="#ff6a5a"/><rect x="${cx-10}" y="${y+12}" width="20" height="1.4" fill="#fff0c8"/>`);
-  // ornamental coins at the podium
-  const coins = `<circle class="fR" cx="${cx}" cy="${base-60}" r="5.5"/><circle class="fL" cx="${cx}" cy="${base-60}" r="3"/>`;
-  return `<path class="${cls}" d="${p}"/><path class="fL" d="${sh}"/>${coins}`;
-}
-
-function palace(x, y, w, cls) { // a classical hall with sweeping eaves, on a hill
-  const c = x + w/2;
-  return `<rect class="${cls}" x="${x+8}" y="${y-34}" width="${w-16}" height="40"/>
-    <path class="fL" d="M${x+8} ${y-34}h${f1((w-16)*.3)}v40h-${f1((w-16)*.3)}Z"/>
-    <path class="${cls}" d="M${x-10} ${y-36}Q${x+4} ${y-32} ${x+14} ${y-42}L${c-20} ${y-58}L${c+20} ${y-58}L${x+w-14} ${y-42}Q${x+w-4} ${y-32} ${x+w+10} ${y-36}L${x+w-6} ${y-30}L${x+6} ${y-30}Z"/>
-    <rect class="${cls}" x="${x+20}" y="${y-70}" width="${w-40}" height="14"/>
-    <path class="${cls}" d="M${x+6} ${y-68}Q${x+18} ${y-66} ${x+26} ${y-74}L${c-10} ${y-88}L${c+10} ${y-88}L${x+w-26} ${y-74}Q${x+w-18} ${y-66} ${x+w-6} ${y-68}L${x+w-18} ${y-64}L${x+18} ${y-64}Z"/>
-    <rect class="${cls}" x="${c-2}" y="${y-96}" width="4" height="9"/>`;
-}
-
-function ferris(cx, cy, r, cls) {
-  let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--${cls})" stroke-width="1.6"/><circle cx="${cx}" cy="${cy}" r="${r*.92}" fill="none" stroke="var(--${cls})" stroke-width=".5"/>`;
-  for (let i = 0; i < 18; i++) {
-    const a = i/18*6.283, x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
-    s += `<line x1="${cx}" y1="${cy}" x2="${f1(x)}" y2="${f1(y)}" stroke="var(--${cls})" stroke-width=".45"/><rect class="${cls}" x="${f1(x-2.2)}" y="${f1(y-1)}" width="4.4" height="4" rx="1"/>`;
-  }
-  s += `<path class="${cls}" d="M${cx-1.5} ${cy}L${cx-r*.55} ${cy+r*1.45}h3L${cx} ${cy+3}L${cx+r*.55-3} ${cy+r*1.45}h3L${cx+1.5} ${cy}Z"/><circle class="${cls}" cx="${cx}" cy="${cy}" r="3"/>`;
-  return s;
-}
-
-function shophouses(x0, x1, cls, R, lights) {
-  let s = '';
-  for (let x = x0; x < x1;) {
-    const w = 26 + R()*22, fl = 3 + Math.floor(R()*4), top = 700 - 14 - fl*13;
-    s += `<rect class="${cls}" x="${f1(x)}" y="${f1(top)}" width="${f1(w)}" height="${f1(700-top)}"/>`;
-    s += `<rect class="fL" x="${f1(x)}" y="${f1(top)}" width="${f1(w*.12)}" height="${f1(700-top)}"/>`;
-    if (R() < .6) { const tx = x + 4 + R()*(w-14); s += `<rect class="${cls}" x="${f1(tx)}" y="${f1(top-9)}" width="9" height="6" rx="2.5"/><rect class="${cls}" x="${f1(tx+1)}" y="${f1(top-3)}" width="1" height="3"/><rect class="${cls}" x="${f1(tx+7)}" y="${f1(top-3)}" width="1" height="3"/>`; }
-    if (R() < .4) s += `<rect class="${cls}" x="${f1(x+w-12)}" y="${f1(top-7)}" width="10" height="7"/>`;
-    if (R() < .35) s += `<rect class="${cls}" x="${f1(x+w-3)}" y="${f1(top+10)}" width="5" height="${f1(fl*7)}"/>`;
-    for (let k = 0; k < fl; k++) {
-      const yy = top + 8 + k*13;
-      for (let xx = x + 4; xx < x + w - 6; xx += 9) {
-        if (R() < .45) lights.push(`<rect x="${f1(xx)}" y="${f1(yy)}" width="5" height="4" fill="#ffcf86" fill-opacity="${(.45+R()*.55).toFixed(2)}"/>`);
-      }
-    }
-    x += w + 1;
-  }
-  return s;
-}
-
-function pine(x, b, h, R) {
-  const tiers = 7; let s = `<rect class="trunk" x="${f1(x-h*.03)}" y="${f1(b-h*.1)}" width="${f1(h*.06)}" height="${f1(h*.1)}"/>`;
-  for (let i = 0; i < tiers; i++) {
-    const t = i/(tiers-1), top = b - h + h*.12*i, bot = top + h*.2 + i*h*.012, hw = h*(.07 + .27*t), mh = (bot-top);
-    let d = `M${x} ${f1(top)}C${f1(x-hw*.25)} ${f1(top+mh*.45)} ${f1(x-hw*.7)} ${f1(bot-mh*.2)} ${f1(x-hw)} ${f1(bot)}`;
-    const n = 4 + i;
-    for (let k = 1; k <= n; k++) { const xx = x - hw + 2*hw*k/n; d += `Q${f1(xx - hw/n)} ${f1(bot - 4 - R()*2)} ${f1(xx)} ${f1(bot + (k===n?0:R()*1.5))}`; }
-    d += `C${f1(x+hw*.7)} ${f1(bot-mh*.2)} ${f1(x+hw*.25)} ${f1(top+mh*.45)} ${x} ${f1(top)}Z`;
-    s += `<path fill="url(#pineG)" d="${d}"/>`;
-    // snow resting on the tier
-    const sy = top + mh*.55, sw = hw*.78;
-    let sd = `M${x} ${f1(top+1)}C${f1(x-sw*.3)} ${f1(top+mh*.35)} ${f1(x-sw*.75)} ${f1(sy-1)} ${f1(x-sw)} ${f1(sy+1)}`;
-    for (let k = 1; k <= 3; k++) { const xx = x - sw + 2*sw*k/3; sd += `Q${f1(xx - sw/3)} ${f1(sy - 3 - R()*2)} ${f1(xx)} ${f1(sy + R()*1.5)}`; }
-    sd += `C${f1(x+sw*.75)} ${f1(sy-1)} ${f1(x+sw*.3)} ${f1(top+mh*.35)} ${x} ${f1(top+1)}Z`;
-    s += `<path class="snow" d="${sd}" opacity=".92"/>`;
-  }
-  return s;
-}
-
-function garland(x1, y1, x2, y2, sag, R, berries = .14) {
-  const cx = (x1+x2)/2, cy = (y1+y2)/2 + sag*2, len = Math.hypot(x2-x1, y2-y1) + sag;
-  const n = Math.max(6, Math.round(len / 1.9)); let s = '';
-  for (let i = 0; i <= n; i++) {
-    const t = i/n, x = (1-t)*(1-t)*x1 + 2*(1-t)*t*cx + t*t*x2, y = (1-t)*(1-t)*y1 + 2*(1-t)*t*cy + t*t*y2;
-    for (let k = 0; k < 2; k++) s += `<ellipse class="${R()<.5?'gr1':'gr2'}" cx="${f1(x+(R()-.5)*2.4)}" cy="${f1(y+(R()-.5)*2.4)}" rx="2.3" ry="1.05" transform="rotate(${Math.round(R()*180)} ${f1(x)} ${f1(y)})"/>`;
-    if (R() < berries) s += `<circle class="berry" cx="${f1(x+(R()-.5)*2.5)}" cy="${f1(y+(R()-.5)*2)}" r=".95"/>`;
-  }
-  return s;
-}
-
-function bowShape() {
-  return `<path d="M0 0C-4 -11 -16 -10 -14 0C-16 9 -4 11 0 0Z" fill="url(#bowG)"/>
-    <path d="M0 0C4 -11 16 -10 14 0C16 9 4 11 0 0Z" fill="url(#bowG)"/>
-    <path d="M-2 -1C-6 -7 -11 -6 -11 -1" stroke="rgba(255,190,190,.45)" stroke-width=".9" fill="none"/>
-    <path d="M-1 1L-7.5 16L-4.2 15.2L-2.8 17.5L1.2 3Z" fill="var(--ribD)"/>
-    <path d="M1 1L6.5 16L3.4 15L2.2 17.5L-1.2 3Z" fill="var(--rib)"/>
-    <ellipse rx="3" ry="3.5" fill="var(--rib)"/><ellipse rx="1.6" ry="2.2" cx="-.6" cy="-.6" fill="var(--ribL)" opacity=".55"/>`;
-}
-
-function shutter(side, x, y, w, h, door) {
-  let s = `<g class="sh ${side}"><rect class="shut" x="${x}" y="${y}" width="${w}" height="${h}"/>`;
-  if (!door) {
-    let lv = '';
-    for (let yy = y + 3.5; yy < y + h - 2.5; yy += 2.8) if (Math.abs(yy - (y + h*.45)) > 2) lv += `M${f1(x+2.4)} ${f1(yy)}h${f1(w-4.8)}`;
-    s += `<path class="lv" d="${lv}"/><rect class="shut" x="${x+1.6}" y="${f1(y+h*.45-1.3)}" width="${f1(w-3.2)}" height="2.6"/>`;
-  } else {
-    s += `<rect x="${x+3}" y="${y+4}" width="${w-6}" height="${f1(h*.44)}" fill="url(#doorGlass)" stroke="var(--shutterD)" stroke-width=".7"/>
-      <path class="lv" d="M${x+w/2} ${y+4}v${f1(h*.44)}M${x+3} ${f1(y+4+h*.22)}h${w-6}"/>
-      <rect x="${x+3}" y="${f1(y+h*.52)}" width="${w-6}" height="${f1(h*.4)}" fill="none" stroke="var(--shutterD)" stroke-width=".8"/>
-      <rect class="shutL" x="${x+4.5}" y="${f1(y+h*.52+1.5)}" width="${w-9}" height="1" opacity=".5"/>
-      <circle class="gold" cx="${side==='L' ? x+w-3 : x+3}" cy="${f1(y+h*.5)}" r="1.3"/>`;
-  }
-  s += `<rect class="shutL" x="${side==='L' ? x : x+w-.9}" y="${y}" width=".9" height="${h}" opacity=".55"/>
-    <rect class="shade" x="${x}" y="${y}" width="${w}" height="${h}"/></g>`;
-  return s;
-}
-
-function giftBox(cx, by, s) {
-  return `<g transform="translate(${cx} ${by}) scale(${s})">
-    <ellipse cx="0" cy="1" rx="13" ry="2" fill="#6a3a10" opacity=".35"/>
-    <rect x="-9" y="-14" width="18" height="14" fill="#7c1424"/><rect x="-9" y="-14" width="6" height="14" fill="#9b2434"/>
-    <rect x="-10" y="-17" width="20" height="4" fill="#8e1a2b"/>
-    <rect x="-1.2" y="-17" width="2.4" height="17" fill="#e8c87e"/><rect x="-9" y="-9" width="18" height="2" fill="#e8c87e"/>
-    <path d="M0 -17C-3 -23 -8 -22 -6 -18Z M0 -17C3 -23 8 -22 6 -18Z" fill="#e8c87e"/>
-  </g><path d="M${f1(cx+10*s)} ${f1(by-25*s)}l1 3 3 1-3 1-1 3-1-3-3-1 3-1z" fill="#fff6dc"/>`;
-}
-
-function xmasTree(cx, by) {
-  return `<g transform="translate(${cx} ${by})">
-    <ellipse rx="16" ry="2.2" fill="#6a3a10" opacity=".3"/>
-    <path d="M0 -50L-10 -30H-6L-14 -14H-9L-17 0H17L9 -14H14L6 -30H10Z" fill="#285a3c"/>
-    <path d="M0 -50L-10 -30H-6L-14 -14H-9L-17 0H-4Z" fill="#336e49"/>
-    <circle cx="-5" cy="-24" r="1.5" fill="#e9c46a"/><circle cx="6" cy="-18" r="1.5" fill="#c0303c"/><circle cx="-8" cy="-8" r="1.5" fill="#c0303c"/><circle cx="9" cy="-5" r="1.5" fill="#e9c46a"/><circle cx="1" cy="-36" r="1.3" fill="#fff2c4"/>
-    <path d="M0 -55l1.4 3.2 3.4.3-2.6 2.2.9 3.3-3.1-1.8-3.1 1.8.9-3.3-2.6-2.2 3.4-.3z" fill="#f4d27a"/>
-    <rect x="-17" y="-6" width="9" height="6" fill="#8e1a2b"/><rect x="9" y="-5" width="8" height="5" fill="#1e3a5f"/>
-  </g>`;
-}
-
-function windowSVG(d) {
-  const [cx, y, w, h] = LAYOUT[d], x = cx - w/2, hw = w/2, door = d === 8, ground = y > 500;
-  const by = y + h*(door ? .4 : .5), s = w/34;
-  let o = `<g class="win${door ? ' door' : ''}" id="w${d}" data-d="${d}">
-    <rect class="halo" x="${x-9}" y="${y-9}" width="${w+18}" height="${h+18}" rx="6" filter="url(#b8)"/>`;
-  // surround
-  if (ground) {
-    const r = hw + 4;
-    o += `<path class="trim" d="M${x-4} ${y+h+3}V${y}A${r} ${r} 0 0 1 ${x+w+4} ${y}V${y+h+3}Z"/>
-      <path class="facD" d="M${x-4} ${y}A${r} ${r} 0 0 1 ${x+w+4} ${y}h-1.2A${r-1.2} ${r-1.2} 0 0 0 ${x-2.8} ${y}Z" opacity=".5"/>
-      <path fill="#26303f" d="M${x} ${y}A${hw} ${hw} 0 0 1 ${x+w} ${y}Z"/>
-      <path fill="url(#warm)" class="dimday" d="M${x} ${y}A${hw} ${hw} 0 0 1 ${x+w} ${y}Z"/>
-      <path class="ironS" stroke-width=".7" d="M${cx} ${y}V${y-hw}M${f1(x+hw*.25)} ${f1(y-hw*.66)}L${cx} ${y}M${f1(x+w-hw*.25)} ${f1(y-hw*.66)}L${cx} ${y}"/>
-      <path class="trim" d="M${cx-3} ${y-hw-5}h6l-1 6h-4Z"/>`;
-  } else {
-    o += `<rect class="trim" x="${x-4}" y="${y-4}" width="${w+8}" height="${h+8}"/>
-      <rect class="facD" x="${x-4}" y="${y-4}" width="${w+8}" height="1" opacity=".6"/>
-      <path class="trim" d="M${x-8} ${y-6}h${w+16}l-2 -4h-${w+12}Z"/><rect class="snow" x="${x-8}" y="${y-12}" width="${w+16}" height="2.6" rx="1.3"/>
-      <path class="trim" d="M${cx-3.5} ${y-6}h7l-1.2 7h-4.6Z"/>`;
-  }
-  if (door) o += `<rect class="trim" x="${x-5}" y="${y-4}" width="${w+10}" height="${h+4}"/>`;
-  // room behind
-  o += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#room)"/>`;
-  if (!door) {
-    o += `<path d="M${x} ${y}h${f1(w*.26)}q-3 ${f1(h*.5)} ${f1(-w*.12)} ${h}h${f1(-w*.14)}Z" fill="#f2dfbd" opacity=".9"/>
-      <path d="M${x+w} ${y}h${f1(-w*.26)}q3 ${f1(h*.5)} ${f1(w*.12)} ${h}h${f1(w*.14)}Z" fill="#f2dfbd" opacity=".9"/>
-      <rect x="${x}" y="${f1(y+h*.74)}" width="${w}" height="2" fill="#8a5222" opacity=".55"/>
-      <g class="gift">${giftBox(cx, y + h*.74, .92)}</g>`;
-  } else {
-    o += `<rect x="${x}" y="${f1(y+h*.86)}" width="${w}" height="${f1(h*.14)}" fill="#a7652c" opacity=".55"/>
-      <g class="gift">${xmasTree(cx, y + h*.93)}</g>`;
-  }
-  // depth shadows inside the opening (side moves with the sun)
-  o += `<rect x="${x}" y="${y}" width="${w}" height="8" fill="url(#rTop)"/>
-    <rect x="${x}" y="${y}" width="5" height="${h}" fill="url(#rL)" style="opacity:var(--rsL)"/>
-    <rect x="${x+w-5}" y="${y}" width="5" height="${h}" fill="url(#rR)" style="opacity:var(--rsR)"/>`;
-  o += shutter('L', x, y, hw, h, door) + shutter('R', cx, y, hw, h, door);
-  // velvet ribbon + bow + tag
-  o += `<g class="rib">
-    <rect class="strip" x="${cx-1.8}" y="${y}" width="3.6" height="${h}" fill="url(#ribV)"/>
-    <rect class="strip" x="${x}" y="${f1(by-1.8)}" width="${w}" height="3.6" fill="url(#ribH)"/>
-    <g class="tag"><g transform="translate(${f1(cx+5*s)} ${f1(by+13*s)}) rotate(-12)">
-      <line x1="-4" y1="-9" x2="0" y2="-3" stroke="#8a6a3a" stroke-width=".5"/>
-      <path d="M-5 -3h10v11h-10Z" fill="#fbf5e6" stroke="#b59a64" stroke-width=".5"/><circle cy="-1.2" r=".8" fill="#b59a64"/>
-      <text y="6" text-anchor="middle" font-size="7" font-weight="600" fill="#5a1520" font-family="Cormorant Garamond,Georgia,serif">${d}</text>
-    </g></g>
-    <g class="bow"><g transform="translate(${cx} ${f1(by)}) scale(${f1(s*1.02)})">${bowShape()}</g></g>
-  </g>`;
-  // sill
-  if (!door) o += `<rect class="trim" x="${x-6}" y="${y+h+1}" width="${w+12}" height="4"/><rect class="facD" x="${x-6}" y="${y+h+5}" width="${w+12}" height="1.4" opacity=".7"/><rect class="snow" x="${x-6}" y="${y+h-.6}" width="${w+12}" height="2.4" rx="1.2"/>`;
-  o += `<rect x="${x-9}" y="${y-12}" width="${w+18}" height="${h+24}" fill="transparent"/></g>`;
-  return o;
-}
-
-let lightsFar = [], lightsMid = [], lightsNear = [];
-function buildScene() {
-  const R = rng(9);
-  // ----- mountains: Taipei basin ringed by hills -----
-  const mtn = `
-    <path class="m1" d="${ridge(1,-700,1100,480,190,8,[[.006,1],[.017,.45],[.05,.12]])}"/>
-    <path class="m2" d="${ridge(2,-700,1100,535,150,7,[[.008,1],[.021,.4],[.06,.12]])}"/>
-    <path class="m3" d="${ridge(3,-700,1100,590,115,6,[[.01,1],[.026,.38],[.07,.12]])}"/>
-    <path class="m4" d="${ridge(4,-700,1100,620,70,6,[[.013,1],[.034,.35],[.09,.1]])}"/>`;
-  // ----- far skyline: 101 + towers -----
-  let far = '';
-  [[-300,520,30],[-262,470,38],[-218,540,26],[-186,500,34],[-140,455,40],[-92,530,28],[-60,490,32],[-22,548,24],
-   [70,520,26],[100,560,22],[150,540,30],[190,505,28],[230,548,24],[262,520,30],[300,470,30],[392,512,30],[426,470,40],[470,530,28],[504,490,34],[546,540,30],[584,500,40],[630,550,30]]
-    .forEach(([x,t,w]) => far += tower(x, t, w, 'l1', R, lightsFar));
-  far += `<rect class="l1" x="14" y="330" width="36" height="370"/><rect class="l1" x="18" y="322" width="28" height="9"/><rect class="l1" x="31" y="296" width="2" height="27"/>
-    <rect class="fL" x="14" y="330" width="11" height="370"/><rect class="fR" x="44" y="330" width="6" height="370"/>`;
-  for (let yy = 338; yy < 660; yy += 6) lightsFar.push(`<rect x="18" y="${yy}" width="28" height="1" fill="#ffd894" fill-opacity="${(.2+R()*.5).toFixed(2)}"/>`);
-  far += `<path class="l1" d="M330 700V430L346 396L362 430V700Z"/><path class="fL" d="M330 700V430L346 396V700Z"/>`;
-  far += taipei101(366, 640, 'l1', lightsFar);
-  // ----- mid: hills with a hall, ferris wheel, towers -----
-  let mid = `<path class="l2" d="${ridge(5,-700,1100,660,40,6,[[.02,1],[.05,.3]])}"/>`;
-  mid += ferris(46, 548, 40, 'l2');
-  mid += palace(300, 640, 120, 'l2');
-  [[-120,600,30],[-80,575,26],[440,590,30],[480,610,24]].forEach(([x,t,w]) => mid += tower(x, t, w, 'l2', R, lightsMid));
-  // ----- near: Taipei walk-up blocks with water tanks -----
-  const near = shophouses(-420, 820, 'l3', R, lightsNear);
-
-  const fac = `
-    <rect class="roofD" x="118" y="180" width="17" height="36"/><rect class="roof" x="118" y="180" width="6" height="36"/><rect class="roofD" x="115" y="177" width="23" height="5"/><rect class="snow" x="114" y="172" width="25" height="6" rx="3"/>
-    <rect class="roofD" x="266" y="184" width="17" height="32"/><rect class="roof" x="266" y="184" width="6" height="32"/><rect class="roofD" x="263" y="181" width="23" height="5"/><rect class="snow" x="262" y="176" width="25" height="6" rx="3"/>
-    <path class="roof" d="M96 293L114 214L286 214L304 293Z"/>
-    <path fill="url(#roofSheen)" d="M96 293L114 214L286 214L304 293Z"/>
-    <path class="sline" d="${(() => { let p=''; for (let i=0;i<=26;i++){ const t=i/26; p+=`M${f1(96+208*t)} 293L${f1(114+172*t)} 214`; } return p; })()}" opacity=".5"/>
-    <path class="snow" d="M112 222Q130 218 150 226Q172 219 200 224Q228 218 250 226Q270 219 288 222L286 214L114 214Z" opacity=".95"/>
-    <rect class="iron" x="110" y="207" width="180" height="2"/>
-    <path class="ironS" stroke-width=".6" d="${(() => { let p=''; for (let x=112;x<=288;x+=6) p+=`M${x} 207v-5`; return p; })()}"/>
-    <rect class="snow" x="108" y="208" width="184" height="7" rx="3"/>
-    ${[140,260].map(cx => `
-      <rect class="fac" x="${cx-14}" y="234" width="28" height="44"/><rect class="facD" x="${cx-14}" y="234" width="4" height="44" opacity=".5"/>
-      <path class="trim" d="M${cx-18} 238Q${cx} 216 ${cx+18} 238Z"/><path class="snow" d="M${cx-19} 237Q${cx} 213 ${cx+19} 237Q${cx} 222 ${cx-19} 237Z"/>
-      <rect fill="#273042" x="${cx-8}" y="243" width="16" height="29"/><rect class="dimday" fill="url(#warm)" x="${cx-8}" y="243" width="16" height="29"/>
-      <path class="ironS" stroke-width=".7" d="M${cx} 243V272M${cx-8} 255H${cx+8}"/><rect class="trim" x="${cx-11}" y="272" width="22" height="3"/>`).join('')}
-    <path class="trim" d="M184 280V244Q200 226 216 244V280Z"/><path class="snow" d="M182 244Q200 222 218 244Q200 232 182 244Z"/>
-    <circle cx="200" cy="258" r="12.5" class="facD"/><circle cx="200" cy="258" r="11" fill="#f9f3e6" stroke="var(--gold)" stroke-width="1.2"/>
-    <g stroke="#3a3328" stroke-width=".6">${Array.from({length:12},(_,i)=>{const a=i/12*6.283;return `<line x1="${f1(200+Math.sin(a)*8.6)}" y1="${f1(258-Math.cos(a)*8.6)}" x2="${f1(200+Math.sin(a)*9.8)}" y2="${f1(258-Math.cos(a)*9.8)}"/>`;}).join('')}</g>
-    <line id="hrH" x1="200" y1="258" x2="200" y2="252.5" stroke="#2a241c" stroke-width="1.3" stroke-linecap="round"/>
-    <line id="mnH" x1="200" y1="258" x2="200" y2="250" stroke="#2a241c" stroke-width=".8" stroke-linecap="round"/>
-    <circle cx="200" cy="258" r="1.1" fill="#2a241c"/>
-
-    <rect class="fac" x="100" y="300" width="200" height="392"/>
-    <rect fill="url(#facLight)" x="100" y="300" width="200" height="392"/>
-    <path class="ln" opacity=".4" d="${(() => { let p=''; for (let y=522;y<690;y+=12){ p+=`M100 ${y}H300`; } return p; })()}"/>
-    <path class="ln" opacity=".3" d="${(() => { let p='',k=0; for (let y=522;y<686;y+=12,k++){ for (let x=100+(k%2?14:0);x<300;x+=28) p+=`M${x} ${y}v12`; } return p; })()}"/>
-    ${(() => { let q=''; for (let y=304;y<500;y+=16){ const w=(y/16)%2?9:13; q+=`<rect class="trim" x="100" y="${y}" width="${w}" height="14"/><rect class="trim" x="${300-w}" y="${y}" width="${w}" height="14"/>`; } return q; })()}
-    <rect class="facD" x="100" y="680" width="200" height="12" opacity=".7"/>
-
-    <rect class="trim" x="94" y="290" width="212" height="5"/><rect class="trim" x="90" y="295" width="220" height="8"/>
-    <rect class="facD" x="90" y="303" width="220" height="2" opacity=".8"/>
-    <path class="facD" d="${(() => { let p=''; for (let x=94;x<306;x+=5) p+=`M${x} 297h2.4v4h-2.4Z`; return p; })()}" opacity=".7"/>
-    <rect class="snow" x="88" y="285" width="224" height="6" rx="3"/>
-    <rect class="trim" x="96" y="402" width="208" height="8"/><rect class="facD" x="96" y="410" width="208" height="1.6" opacity=".8"/><rect class="snow" x="96" y="399" width="208" height="3.4" rx="1.7"/>
-    <rect class="trim" x="96" y="506" width="208" height="9"/><rect class="facD" x="96" y="515" width="208" height="1.6" opacity=".8"/><rect class="snow" x="96" y="503" width="208" height="3.4" rx="1.7"/>
-
-    <path class="ironS" stroke-width=".9" d="${(() => { let p=''; [135,200,265].forEach(c=>{ for (let x=c-20;x<=c+20;x+=3.4) p+=`M${f1(x)} 389V396`; }); return p; })()}"/>
-    ${[135,200,265].map(c=>`<rect class="iron" x="${c-21}" y="388" width="42" height="1.4"/><rect class="snow" x="${c-21}" y="386.4" width="42" height="2" rx="1"/>`).join('')}
-    <rect class="trim" x="104" y="497" width="192" height="5"/>
-    <path class="ironS" stroke-width=".9" d="${(() => { let p=''; for (let x=108;x<=292;x+=4) p+=`M${x} 486V497`; for (let x=112;x<=292;x+=16) p+=`M${x-4} 491q4 -4 8 0q-4 4 -8 0`; return p; })()}"/>
-    <rect class="iron" x="104" y="484.5" width="192" height="1.8"/><rect class="snow" x="104" y="482.6" width="192" height="2.4" rx="1.2"/>
-
-    <ellipse cx="200" cy="452" rx="18" ry="24" class="trim"/>
-    <ellipse cx="200" cy="452" rx="15" ry="21" fill="#21423a" stroke="var(--gold)" stroke-width="1.1"/>
-    <text x="200" y="458" text-anchor="middle" font-size="17" fill="#e8cc88" font-family="Cormorant Garamond,Georgia,serif" font-style="italic" font-weight="600">${PLAQUE}</text>
-
-    <rect class="trim" x="164" y="689" width="72" height="5"/><rect class="facD" x="160" y="694" width="80" height="6"/><rect class="snow" x="158" y="692" width="84" height="2.6" rx="1.3"/>
-    ${[170,230].map(x=>`<rect class="iron" x="${x-.6}" y="578" width="1.2" height="8"/><path class="iron" d="M${x-4} 586h8l-1.5 11h-5Z"/><rect class="dimday" fill="#ffd98e" x="${x-2.6}" y="587.5" width="5.2" height="8"/><path class="iron" d="M${x-4.5} 586l4.5 -4 4.5 4Z"/>`).join('')}`;
-
-  const deco = (() => {
-    const G = rng(21); let s = '';
-    [[135,322],[200,322],[265,322]].forEach(([c,y]) => s += garland(c-24, y-9, c+24, y-9, 5, G));
-    [[135,420],[265,420]].forEach(([c,y]) => s += garland(c-24, y-9, c+24, y-9, 5, G));
-    for (let x = 104; x <= 242; x += 46) s += garland(x, 484, x+46, 484, 5, G, .2);
-    s += garland(92, 300, 200, 300, 9, G, .1) + garland(200, 300, 308, 300, 9, G, .1);
-    // wreath above the door
-    for (let i = 0; i < 40; i++) { const a = i/40*6.283, x = 200 + Math.cos(a)*9, y = 528 + Math.sin(a)*9;
-      s += `<ellipse class="${G()<.5?'gr1':'gr2'}" cx="${f1(x)}" cy="${f1(y)}" rx="2.6" ry="1.2" transform="rotate(${Math.round(a*57+90+G()*40)} ${f1(x)} ${f1(y)})"/>`;
-      if (G() < .25) s += `<circle class="berry" cx="${f1(x)}" cy="${f1(y)}" r="1"/>`; }
-    s += `<g transform="translate(200 538) scale(.38)">${bowShape()}</g>`;
-    return s;
-  })();
-
-  // fairy lights
-  const fairy = (() => {
-    const F = rng(33); let s = '';
-    const add = (x, y) => { const tw = F() < .45 ? ` class="tw" style="animation-delay:${(-F()*3).toFixed(2)}s"` : ''; s += `<g${tw}><circle class="flg" cx="${f1(x)}" cy="${f1(y)}" r="3.6"/><circle class="fl" cx="${f1(x)}" cy="${f1(y)}" r="1.05"/></g>`; };
-    for (let x = 92; x <= 308; x += 7.2) add(x, 300 + Math.sin((x-92)/108*Math.PI)*9 * (x<200?1:1) - 0);
-    for (let x = 108; x <= 292; x += 7.4) add(x, 486 + 4*Math.sin(((x-104)%46)/46*Math.PI));
-    for (let x = 112; x <= 288; x += 8) add(x, 206);
-    return s;
-  })();
-
-  const svg = `
-  <defs>
-    <filter id="bld" x="-20%" y="-10%" width="140%" height="125%"><feDropShadow id="bldSh" dx="0" dy="3" stdDeviation="3.2" flood-color="#0b1030" flood-opacity=".35"/></filter>
-    <filter id="soft" x="-10%" y="-20%" width="120%" height="150%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.8" flood-color="#0b1030" flood-opacity=".22"/></filter>
-    <filter id="b8" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
-    <filter id="b4" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
-    <radialGradient id="warm" cx=".5" cy=".62" r=".85"><stop offset="0" stop-color="#fff4d6"/><stop offset=".5" stop-color="#ffd283"/><stop offset="1" stop-color="#c8782c"/></radialGradient>
-    <radialGradient id="room" cx=".5" cy=".55" r=".9"><stop offset="0" stop-color="#ffefc8"/><stop offset=".45" stop-color="#f7c072"/><stop offset="1" stop-color="#9a5420"/></radialGradient>
-    <linearGradient id="doorGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe2a8"/><stop offset="1" stop-color="#c97c36"/></linearGradient>
-    <linearGradient id="rTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#140c06" stop-opacity=".55"/><stop offset="1" stop-color="#140c06" stop-opacity="0"/></linearGradient>
-    <linearGradient id="rL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#140c06" stop-opacity=".6"/><stop offset="1" stop-color="#140c06" stop-opacity="0"/></linearGradient>
-    <linearGradient id="rR" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#140c06" stop-opacity=".6"/><stop offset="1" stop-color="#140c06" stop-opacity="0"/></linearGradient>
-    <linearGradient id="ribV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--ribD)"/><stop offset=".45" style="stop-color:var(--ribL)"/><stop offset="1" style="stop-color:var(--ribD)"/></linearGradient>
-    <linearGradient id="ribH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--ribD)"/><stop offset=".45" style="stop-color:var(--ribL)"/><stop offset="1" style="stop-color:var(--ribD)"/></linearGradient>
-    <radialGradient id="bowG" cx=".35" cy=".35" r=".8"><stop offset="0" style="stop-color:var(--ribL)"/><stop offset=".55" style="stop-color:var(--rib)"/><stop offset="1" style="stop-color:var(--ribD)"/></radialGradient>
-    <linearGradient id="facLight" x1="0" y1="0" x2="1" y2="0"><stop id="flA" offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop id="flB" offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
-    <linearGradient id="roofSheen" x1="0" y1="0" x2="1" y2="0"><stop id="rsA" offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop id="rsB" offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
-    <linearGradient id="pineG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--pineA)"/><stop offset="1" style="stop-color:var(--pineB)"/></linearGradient>
-    <linearGradient id="gndG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--g1)"/><stop offset="1" style="stop-color:var(--g2)"/></linearGradient>
-    <linearGradient id="gndG2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--g1)"/><stop offset=".6" style="stop-color:var(--g2)"/></linearGradient>
-    <linearGradient id="fog1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--fg1)" stop-opacity="0"/><stop offset="1" style="stop-color:var(--fg1)" stop-opacity=".9"/></linearGradient>
-    <linearGradient id="fog2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--fg2)" stop-opacity="0"/><stop offset="1" style="stop-color:var(--fg2)" stop-opacity=".85"/></linearGradient>
-    <linearGradient id="fog3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--fg3)" stop-opacity="0"/><stop offset="1" style="stop-color:var(--fg3)" stop-opacity=".8"/></linearGradient>
-    <radialGradient id="spill"><stop offset="0" stop-color="#ffcf80" stop-opacity=".75"/><stop offset="1" stop-color="#ffcf80" stop-opacity="0"/></radialGradient>
-    <radialGradient id="flG"><stop offset="0" stop-color="#ffe2a0" stop-opacity=".85"/><stop offset="1" stop-color="#ffe2a0" stop-opacity="0"/></radialGradient>
-  </defs>
-  <g>${mtn}</g>
-  <rect x="-700" y="470" width="1800" height="160" fill="url(#fog1)"/>
-  <g>${far}</g><g class="clight">${lightsFar.join('')}</g>
-  <rect x="-700" y="560" width="1800" height="110" fill="url(#fog2)"/>
-  <g>${mid}</g><g class="clight">${lightsMid.join('')}</g>
-  <rect x="-700" y="610" width="1800" height="80" fill="url(#fog3)"/>
-  <g>${near}</g><g class="clight">${lightsNear.join('')}</g>
-  <rect x="-700" y="650" width="1800" height="50" fill="url(#fog3)"/>
-
-  <path class="gnd" d="M-700 704Q-400 676 -140 694Q20 706 96 694L304 694Q400 684 540 702Q800 672 1100 700L1100 2200L-700 2200Z"/>
-  <path id="gshadow" fill="#3b4a7a" opacity="0" filter="url(#b4)" d=""/>
-  <g id="treeShadows" fill="#3b4a7a" filter="url(#b4)"></g>
-  <g filter="url(#soft)">${pine(86,706,82,rng(41))}${pine(320,706,90,rng(42))}${pine(-10,710,100,rng(43))}${pine(420,712,96,rng(44))}</g>
-
-  <g filter="url(#bld)">${fac}</g>
-  <g filter="url(#soft)">${deco}</g>
-  <g id="wins"></g>
-  <g>${fairy}</g>
-
-  <path d="M176 702L224 702Q236 770 290 870L110 870Q164 770 176 702Z" fill="url(#gndG2)" opacity=".55"/>
-  <g class="nightonly">
-    <ellipse cx="200" cy="716" rx="50" ry="14" fill="url(#spill)"/>
-    <ellipse cx="130" cy="708" rx="26" ry="8" fill="url(#spill)" opacity=".7"/><ellipse cx="270" cy="708" rx="26" ry="8" fill="url(#spill)" opacity=".7"/>
-    <ellipse cx="338" cy="722" rx="30" ry="9" fill="url(#spill)"/>
-    <circle cx="338" cy="604" r="26" fill="url(#flG)"/>
-  </g>
-  <g filter="url(#soft)">
-    <rect class="iron" x="336.8" y="612" width="2.4" height="110"/><path class="iron" d="M333 722h10l-1.5 -8h-7Z"/>
-    <path class="iron" d="M331 612h14l-2 -16h-10Z"/><rect class="dimday" fill="#ffe0a0" x="333.5" y="598" width="9" height="12"/>
-    <path class="iron" d="M330 597h16l-8 -8Z"/><path class="snow" d="M330 596h16l-8 -8Z" opacity=".9"/>
-    ${pine(48,758,148,rng(51))}${pine(372,762,164,rng(52))}
-  </g>
-  <path class="gnd" d="M-700 796Q-300 712 26 742Q112 752 160 800Q186 830 192 2200L-700 2200Z"/>
-  <path class="gnd" d="M208 2200Q214 820 258 790Q330 742 450 746Q750 726 1100 774L1100 2200Z"/>`;
-  const scene = document.getElementById('scene');
-  scene.innerHTML = svg;
-  scene.querySelector('#wins').innerHTML = Object.keys(LAYOUT).map(d => windowSVG(+d)).join('');
-
-  // foreground, out of focus (depth of field)
-  document.getElementById('fg').innerHTML = `<g fill="var(--fgc)">${pine(-6,950,250,rng(61))}${pine(410,960,280,rng(62))}</g>
-    <path fill="var(--g2)" d="M-700 900Q-200 820 60 860Q160 880 200 940L200 1200L-700 1200Z" opacity=".9"/>`;
-}
-buildScene();
-// trees that cast shadows: [x, base, height]
-const TREES = [[48,758,148],[372,762,164],[86,706,82],[320,706,90]];
-
-/* ================= sky (canvas) ================= */
-const sky = document.getElementById('sky'), sx = sky.getContext('2d');
-const bg = document.createElement('canvas'), bx = bg.getContext('2d');
-let W = 0, H = 0, DPR = Math.min(2, window.devicePixelRatio || 1);
-let STATE = null, NIGHT = 1, SUN = null, map = {s:1, ox:0, oy:0};
-
-// tileable cloud density
-const TW = 512, TH = 160, DEN = new Float32Array(TW*TH);
-(() => {
-  const R = rng(11);
-  [[5,.5],[10,.26],[20,.13],[40,.07],[80,.04]].forEach(([f,amp]) => {
-    const gx = f, gy = Math.ceil(f*TH/TW) + 2, g = new Float32Array(gx*gy).map(() => R());
-    for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) {
-      const fx = x/TW*gx, fy = y/TW*gx, x0 = Math.floor(fx), y0 = Math.floor(fy);
-      let tx = fx-x0, ty = fy-y0; tx = tx*tx*(3-2*tx); ty = ty*ty*(3-2*ty);
-      const x1 = (x0+1)%gx, a = g[x0+y0*gx], b = g[x1+y0*gx], c = g[x0+(y0+1)*gx], d = g[x1+(y0+1)*gx];
-      DEN[x+y*TW] += amp*((a*(1-tx)+b*tx)*(1-ty) + (c*(1-tx)+d*tx)*ty);
-    }
-  });
-  for (let y = 0; y < TH; y++) { const p = Math.pow(Math.sin(Math.PI*y/TH), .7); for (let x = 0; x < TW; x++) DEN[x+y*TW] *= .62 + .5*p; }
-})();
-const cloudC = document.createElement('canvas'); cloudC.width = TW; cloudC.height = TH;
-const cloudX = cloudC.getContext('2d'), cloudImg = cloudX.createImageData(TW, TH);
-function paintClouds(st, sun) {
-  const lit = hx(st.cl), sh = hx(st.cs), gl = hx(st.glow), A = cloudImg.data;
-  // direction from clouds toward the light
-  let lx = (sun.x - .5) * 2, ly = clamp((sun.y - .25) * 4, -1, 1);
-  const L = Math.hypot(lx, ly) || 1; lx /= L; ly /= L;
-  for (let y = 0; y < TH; y++) {
-    const fade = sstep(0, .25, y/TH) * (1 - sstep(.72, 1, y/TH));
-    for (let x = 0; x < TW; x++) {
-      const i = x + y*TW, dd = DEN[i];
-      const a = sstep(.42, .66, dd) * fade * st.ca;
-      const j = 4*i;
-      if (a < .004) { A[j+3] = 0; continue; }
-      const sx2 = (x + Math.round(lx*7) + TW) % TW, sy2 = clamp(y + Math.round(ly*7), 0, TH-1);
-      const occ = clamp((DEN[sx2 + sy2*TW] - dd) * 5 + .45, 0, 1);
-      const edge = (1 - sstep(.42, .58, dd)) * st.gi * .7;
-      for (let c = 0; c < 3; c++) A[j+c] = clamp(lit[c] + (sh[c]-lit[c])*occ + (gl[c]-lit[c])*edge*.6 + (255-lit[c])*edge*.15, 0, 255);
-      A[j+3] = a * 255;
-    }
-  }
-  cloudX.putImageData(cloudImg, 0, 0);
-}
-
-// milky way
-const mw = document.createElement('canvas'), mwx = mw.getContext('2d');
-let stars = [];
-function buildStars() {
-  const R = rng(3);
-  stars = Array.from({length: Math.round(W*H/2200)}, () => ({x: R()*W, y: Math.pow(R(),1.3)*H*.62, r: R()*1.05+.25, p: R()*6.28, s: .5+R()*1.6}));
-  mw.width = W; mw.height = H; mwx.clearRect(0,0,W,H);
-  mwx.save(); mwx.translate(W*.5, H*.24); mwx.rotate(-.5);
-  const g = mwx.createLinearGradient(0,-H*.09,0,H*.09);
-  g.addColorStop(0,'rgba(150,160,220,0)'); g.addColorStop(.5,'rgba(190,195,240,.13)'); g.addColorStop(1,'rgba(150,160,220,0)');
-  mwx.fillStyle = g; mwx.fillRect(-W, -H*.09, W*2, H*.18);
-  mwx.fillStyle = '#fff';
-  for (let i = 0; i < W*H/220; i++) { const x = (R()-.5)*W*1.8, y = (R()+R()+R()-1.5)*H*.05; mwx.globalAlpha = R()*.5; mwx.fillRect(x, y, .8, .8); }
-  mwx.globalAlpha = .18; mwx.fillStyle = '#0a0d24';
-  for (let i = 0; i < 40; i++) { mwx.beginPath(); mwx.ellipse((R()-.5)*W*1.6, (R()-.5)*H*.035, 20+R()*40, 3+R()*5, 0, 0, 6.28); mwx.fill(); }
-  mwx.restore();
-}
-
-function drawSkyBG() {
-  const st = STATE, sun = SUN;
-  bg.width = W*DPR; bg.height = H*DPR; bx.setTransform(DPR,0,0,DPR,0,0);
-  const horY = map.oy + 600*map.s;
-  const g = bx.createLinearGradient(0, 0, 0, horY);
-  g.addColorStop(0, st.zen); g.addColorStop(.5, mix(st.zen, st.hor, .38)); g.addColorStop(.82, mix(st.zen, st.hor, .78)); g.addColorStop(1, st.hor);
-  bx.fillStyle = g; bx.fillRect(0, 0, W, H);
-  // atmospheric glow around (or below) the sun
-  const gx = sun.x*W, gy = Math.min(sun.y*H, horY);
-  const rg = bx.createRadialGradient(gx, gy, 0, gx, gy, Math.max(W, H)*.8);
-  rg.addColorStop(0, rgba(st.glow, .85*st.gi)); rg.addColorStop(.25, rgba(st.glow, .35*st.gi)); rg.addColorStop(1, rgba(st.glow, 0));
-  bx.globalCompositeOperation = 'screen'; bx.fillStyle = rg; bx.fillRect(0, 0, W, H);
-  // horizon haze band
-  const hb = bx.createLinearGradient(0, horY - H*.18, 0, horY);
-  hb.addColorStop(0, rgba(st.hor, 0)); hb.addColorStop(1, rgba(mix(st.hor, '#ffffff', .15), .5));
-  bx.fillStyle = hb; bx.fillRect(0, horY - H*.18, W, H*.18);
-  bx.globalCompositeOperation = 'source-over';
-  // sun
-  if (sun.up) {
-    const sxp = sun.x*W, syp = sun.y*H, a = sstep(0, .06, Math.min(sun.s, 1-sun.s));
-    const b = bx.createRadialGradient(sxp, syp, 0, sxp, syp, 90);
-    b.addColorStop(0, `rgba(255,252,240,${a})`); b.addColorStop(.12, `rgba(255,246,220,${a*.95})`); b.addColorStop(.2, `rgba(255,228,170,${a*.4})`); b.addColorStop(1, 'rgba(255,220,160,0)');
-    bx.fillStyle = b; bx.fillRect(sxp-90, syp-90, 180, 180);
-  }
-  // moon
-  if (sun.moonUp) {
-    const mx = sun.mx*W, my = sun.my*H, a = sstep(0, .05, Math.min(sun.ms, 1-sun.ms));
-    const halo = bx.createRadialGradient(mx, my, 0, mx, my, 110);
-    halo.addColorStop(0, `rgba(210,222,255,${.35*a})`); halo.addColorStop(1, 'rgba(210,222,255,0)');
-    bx.fillStyle = halo; bx.fillRect(mx-110, my-110, 220, 220);
-    const r = 15, md = bx.createRadialGradient(mx-4, my-4, 2, mx, my, r);
-    md.addColorStop(0, `rgba(252,252,246,${a})`); md.addColorStop(1, `rgba(214,218,226,${a})`);
-    bx.fillStyle = md; bx.beginPath(); bx.arc(mx, my, r, 0, 6.28); bx.fill();
-    bx.fillStyle = `rgba(150,158,178,${.28*a})`;
-    [[-4,-3,4.5],[5,2,3.2],[-2,6,2.6],[4,-6,2],[-7,3,1.8]].forEach(([dx,dy,rr]) => { bx.beginPath(); bx.arc(mx+dx, my+dy, rr, 0, 6.28); bx.fill(); });
-  }
-}
-
-let cloudOff = 0;
-function frameSky(t) {
-  sx.setTransform(DPR,0,0,DPR,0,0);
-  sx.drawImage(bg, 0, 0, W, H);
-  if (NIGHT > .02) {
-    sx.globalAlpha = NIGHT*.85; sx.drawImage(mw, 0, 0); sx.globalAlpha = 1;
-    sx.fillStyle = '#fff';
-    for (const s of stars) { sx.globalAlpha = NIGHT * (.4 + .6*Math.abs(Math.sin(s.p + t/1000*s.s*.5))); sx.beginPath(); sx.arc(s.x, s.y, s.r, 0, 6.28); sx.fill(); }
-    sx.globalAlpha = 1;
-  }
-  const cw = W*2.3, ch = Math.min(H*.42, map.oy + 520*map.s);
-  cloudOff = (cloudOff + .07) % cw;
-  sx.drawImage(cloudC, -cloudOff, H*.03, cw, ch);
-  sx.drawImage(cloudC, cw - cloudOff, H*.03, cw, ch);
-}
-
-/* ================= apply time ================= */
-function applyTime(h) {
-  const st = sample(h), si = sunInfo(h), r = document.documentElement.style, set = (k,v) => r.setProperty(k,v);
-  STATE = st; NIGHT = st.n;
-  const day = 1 - st.n;
-  // sun & moon screen positions
-  const s = clamp(si.s, -.08, 1.08);
-  si.x = .06 + .88*s; si.y = .44 - .3*Math.sin(Math.PI*clamp(s,0,1)) + (si.up ? 0 : .06);
-  si.mx = .9 - .8*si.ms; si.my = .4 - .26*Math.sin(Math.PI*si.ms);
-  SUN = si;
-
-  // haze layers: further = closer to horizon colour
-  const hz = st.hor, dk = st.dark;
-  set('--m1', mix(hz, dk, .2)); set('--m2', mix(hz, dk, .31)); set('--m3', mix(hz, dk, .42)); set('--m4', mix(hz, dk, .5));
-  set('--l1', mix(hz, dk, .56)); set('--l2', mix(hz, dk, .65)); set('--l3', mix(hz, dk, .74));
-  set('--fg1', mix(hz, dk, .12)); set('--fg2', mix(hz, dk, .3)); set('--fg3', mix(hz, dk, .45));
-  const side = si.up ? (si.x - .5) * 2 : (si.mx - .5) * 2 * .3; // + = light from right
-  const faceA = .12 * day + .04;
-  set('--faceL', side < 0 ? `rgba(255,236,210,${(faceA*-side).toFixed(3)})` : `rgba(10,14,40,${(faceA*side+.05).toFixed(3)})`);
-  set('--faceR', side > 0 ? `rgba(255,236,210,${(faceA*side).toFixed(3)})` : `rgba(10,14,40,${(faceA*-side+.05).toFixed(3)})`);
-
-  // the house, lit by the current light
-  for (const k in BASE) set('--' + k, mul(BASE[k], st.tint));
-  set('--pineA', mul(side < 0 ? BASE.pineL : BASE.pineD, st.tint)); set('--pineB', mul(side < 0 ? BASE.pineD : BASE.pineL, st.tint));
-  set('--g1', mul('#fdfdff', st.tint)); set('--g2', mul(mix('#c3cee6', st.hor, .15), st.tint));
-  set('--fgc', mul('#1b2c2a', st.tint));
-  set('--n', st.n.toFixed(3)); set('--day', day.toFixed(3));
-  set('--rsL', (side < 0 ? .25 : .25 + .6*day*Math.abs(side)).toFixed(2));
-  set('--rsR', (side > 0 ? .25 : .25 + .6*day*Math.abs(side)).toFixed(2));
-  document.querySelector('meta[name=theme-color]').content = st.zen;
-
-  // sunlit side vs shadow side of the facade & roof
-  const lit = .22*day*Math.abs(side) + .04*day, dim = .2*day*Math.abs(side) + .05;
-  const A = side < 0 ? ['#fff3df', lit, '#101436', dim] : ['#101436', dim, '#fff3df', lit];
-  const fa = document.getElementById('flA'), fb = document.getElementById('flB');
-  fa.setAttribute('stop-color', A[0]); fa.setAttribute('stop-opacity', A[1]); fb.setAttribute('stop-color', A[2]); fb.setAttribute('stop-opacity', A[3]);
-  const ra = document.getElementById('rsA'), rb = document.getElementById('rsB');
-  ra.setAttribute('stop-color', A[0]); ra.setAttribute('stop-opacity', A[1]*1.4); rb.setAttribute('stop-color', A[2]); rb.setAttribute('stop-opacity', A[3]*1.2);
-
-  // cast shadows follow the sun
-  const elev = si.elev, len = si.up ? 18 + 120*(1 - elev) : 0, dir = -Math.sign(side || 1);
-  const bs = document.getElementById('bldSh');
-  bs.setAttribute('dx', f1(dir * (2 + 9*(1-elev)) * day)); bs.setAttribute('dy', f1(3 + 2*elev));
-  bs.setAttribute('flood-opacity', (.18 + .25*day).toFixed(2));
-  const gs = document.getElementById('gshadow');
-  if (si.up && day > .1) {
-    const e = dir > 0 ? 300 : 100, L = len*dir;
-    gs.setAttribute('d', `M${e} 692L${f1(e+L)} ${f1(696+len*.06)}L${f1(e+L*1.08)} ${f1(712+len*.08)}L${f1(e-dir*20)} 716L${200} 716L${200} 692Z`);
-    gs.setAttribute('opacity', (.32*day*sstep(0,.12,Math.min(si.s,1-si.s))).toFixed(2));
-    document.getElementById('treeShadows').innerHTML = TREES.map(([x,b,hh]) => `<ellipse cx="${f1(x + dir*hh*.35*(1-elev*.6))}" cy="${b+2}" rx="${f1(hh*.36*(1.2-elev*.5))}" ry="${f1(hh*.04)}" opacity="${(.3*day).toFixed(2)}"/>`).join('');
-  } else { gs.setAttribute('opacity', 0); document.getElementById('treeShadows').innerHTML = ''; }
-
-  // the dormer clock keeps time
-  const hrs = ((h % 12) + 12) % 12, mins = (h % 1) * 60;
-  const hand = (id, ang, len2) => { const e = document.getElementById(id); e.setAttribute('x2', f1(200 + Math.sin(ang)*len2)); e.setAttribute('y2', f1(258 - Math.cos(ang)*len2)); };
-  hand('hrH', hrs/12*6.283, 5.2); hand('mnH', mins/60*6.283, 8);
-
-  paintClouds(st, si);
-  drawSkyBG();
-}
-
-/* ================= falling snow with depth ================= */
-const sn = document.getElementById('snow'), nx = sn.getContext('2d');
-let flakes = [];
-function resize() {
-  W = innerWidth; H = innerHeight;
-  [sky, sn].forEach(c => { c.width = W*DPR; c.height = H*DPR; });
-  nx.setTransform(DPR,0,0,DPR,0,0);
-  const sc = document.getElementById('scene').getBoundingClientRect();
-  const s = Math.min(sc.width/400, sc.height/860);
-  map = { s, ox: (sc.width - 400*s)/2, oy: sc.height - 860*s };
-  buildStars();
-  const n = Math.round(Math.min(160, W*H/5500));
-  flakes = Array.from({length: n}, () => { const z = Math.random(); return {x: Math.random()*W, y: Math.random()*H, z, w: Math.random()*6.28}; });
-  if (STATE) drawSkyBG();
-}
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-function frame(t) {
-  frameSky(t);
-  nx.clearRect(0,0,W,H);
-  for (const f of flakes) {
-    const r = .5 + f.z*f.z*3.2, v = (.25 + f.z*.9) * (reduce ? .3 : 1);
-    f.y += v; f.w += .01 + f.z*.01; f.x += Math.sin(f.w) * (.2 + f.z*.4);
-    if (f.y > H + 10) { f.y = -10; f.x = Math.random()*W; }
-    if (f.z > .93) { // close, out-of-focus flakes
-      const g = nx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r*2.4);
-      g.addColorStop(0, 'rgba(255,255,255,.5)'); g.addColorStop(1, 'rgba(255,255,255,0)');
-      nx.fillStyle = g; nx.beginPath(); nx.arc(f.x, f.y, r*2.4, 0, 6.28); nx.fill();
-    } else { nx.fillStyle = `rgba(255,255,255,${(.45 + f.z*.45).toFixed(2)})`; nx.beginPath(); nx.arc(f.x, f.y, r, 0, 6.28); nx.fill(); }
-  }
-  requestAnimationFrame(frame);
-}
-
-/* film grain */
-(() => { const c = document.createElement('canvas'); c.width = c.height = 200; const x = c.getContext('2d'), d = x.createImageData(200,200);
-  for (let i = 0; i < d.data.length; i += 4) { const v = Math.random()*255; d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 255; }
-  x.putImageData(d,0,0); document.getElementById('grain').style.backgroundImage = `url(${c.toDataURL()})`; })();
-
-/* ================= windows ================= */
-const wins = [...document.querySelectorAll('.win')];
-function refreshWindows(instant) {
-  wins.forEach(g => {
-    const d = +g.dataset.d;
-    if (instant) g.classList.add('instant');
-    g.classList.toggle('open', opened.has(d));
-    g.classList.toggle('ready', !opened.has(d) && isUnlocked(d));
-    if (instant) requestAnimationFrame(() => requestAnimationFrame(() => g.classList.remove('instant')));
-  });
-  updateStatus();
+  return null;
 }
 let toastT;
-function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
-wins.forEach(g => g.addEventListener('click', () => {
-  const d = +g.dataset.d;
-  if (opened.has(d)) return showCard(d, 0);
-  if (!isUnlocked(d)) { g.classList.remove('shake'); void g.getBoundingClientRect(); g.classList.add('shake'); return toast(`这扇窗 ${fmt(dayDate(d))} 才能打开哦`); }
-  opened.add(d); saveOpened();
-  g.classList.remove('ready'); g.classList.add('open');
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+let NOW = 0;
+canvas.addEventListener('click', e => {
+  const W = hitWindow(e.clientX, e.clientY); if (!W) return;
+  if (opened.has(W.d)) return showCard(W.d, 0);
+  if (!isUnlocked(W.d)) { W.shake = NOW; return toast(`这扇窗 ${fmt(dayDate(W.d))} 才能打开哦`); }
+  opened.add(W.d); saveOpened(); W.t0 = NOW; W.state = 2;
   if (navigator.vibrate) try { navigator.vibrate(18); } catch(e) {}
-  updateStatus(); showCard(d, 2100);
-}));
+  updateStatus(); showCard(W.d, 2600);
+});
 const modal = document.getElementById('modal');
-function showCard(d, delay) {
+function showCard(d, delay){
   const c = CONTENT[d-1] || {};
-  document.getElementById('card').innerHTML = `<svg class="bowtop" width="52" height="40" viewBox="-18 -13 36 32"><defs><radialGradient id="bowG2" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#e3646f"/><stop offset=".55" stop-color="#a51e30"/><stop offset="1" stop-color="#5a0c18"/></radialGradient></defs>${bowShape().replaceAll('url(#bowG)','url(#bowG2)').replaceAll('var(--ribD)','#5a0c18').replaceAll('var(--ribL)','#e3646f').replaceAll('var(--rib)','#a51e30')}</svg>
+  document.getElementById('card').innerHTML = `<svg class="bowtop" width="52" height="40" viewBox="-18 -13 36 32"><path d="M0 0C-4 -11 -16 -10 -14 0C-16 9 -4 11 0 0Z" fill="#a51e30"/><path d="M0 0C4 -11 16 -10 14 0C16 9 4 11 0 0Z" fill="#a51e30"/><path d="M-1 1L-7.5 16L-4.2 15.2L-2.8 17.5L1.2 3Z" fill="#5a0c18"/><path d="M1 1L6.5 16L3.4 15L2.2 17.5L-1.2 3Z" fill="#a51e30"/><ellipse rx="3" ry="3.5" fill="#7a1222"/></svg>
     <div class="meta">NO. ${d} · ${fmt(dayDate(d))}</div><h2>${c.title || ''}</h2>
     ${c.img ? `<img src="${c.img}" alt="">` : ''}<p>${c.text || ''}</p><button id="close">收下啦</button>`;
   setTimeout(() => modal.classList.add('on'), delay);
   document.getElementById('close').onclick = () => modal.classList.remove('on');
 }
 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('on'); });
-function updateStatus() {
+function updateStatus(){
   const el = document.getElementById('status'), avail = [1,2,3,4,5,6,7,8].filter(isUnlocked), waiting = avail.filter(d => !opened.has(d));
-  if (!avail.length) el.textContent = `第一扇窗 12月25日 打开 · 还有 ${Math.ceil((dayDate(1) - new Date()) / 864e5)} 天`;
+  if (!avail.length) el.textContent = `第一扇窗 12月25日 打开 · 还有 ${Math.ceil((dayDate(1) - new Date())/864e5)} 天`;
   else if (waiting.length) el.textContent = waiting.length === 1 ? `第 ${waiting[0]} 扇窗可以打开了 ✦` : `有 ${waiting.length} 扇窗等你打开 ✦`;
-  else if (avail.length < 8) el.textContent = `下一扇窗 · ${fmt(dayDate(avail.length + 1))} 零点`;
+  else if (avail.length < 8) el.textContent = `下一扇窗 · ${fmt(dayDate(avail.length+1))} 零点`;
   else el.textContent = 'Happy New Year ✦';
 }
 
+/* ================= render ================= */
+let smDirty = true, lastL = '';
+function lightVP(L){
+  const c = [0, 6, -1], dist = 60;
+  const eye = [c[0]+L[0]*dist, c[1]+L[1]*dist, c[2]+L[2]*dist];
+  return M4.mul(M4.ortho(-17,17,-14,16,1,140), M4.look(eye, c, Math.abs(L[1])>.99?[0,0,1]:[0,1,0]));
+}
+function leafModel(side, W, ang){
+  const H = side.hinge; const a = side === W.L ? -ang : ang;
+  return M4.chain(M4.T(H[0],H[1],H[2]), M4.RY(a), side === W.L ? M4.id() : M4.T(-(W.w/2+.03),0,0));
+}
+function updateDyn(t){
+  let anim = false;
+  WINS.forEach(W => {
+    let rp, sp;
+    if (W.state === 1) { rp = 1; sp = 1; }
+    else if (W.state === 2) { const e = t - W.t0; rp = clamp(e/0.9, 0, 1); sp = clamp((e-0.55)/1.7, 0, 1); if (sp < 1) anim = true; }
+    else { rp = 0; sp = 0; }
+    const door = W.kind === 'door', maxA = door ? 1.75 : 2.98;
+    const ang = ease(sp) * maxA;
+    // shake when locked
+    let shx = 0; if (W.shake && t - W.shake < .45) { shx = Math.sin((t-W.shake)*55)*.03*(1-(t-W.shake)/.45); anim = true; }
+    W.L.mesh.model = M4.mul(M4.T(shx,0,0), leafModel(W.L, W, ang));
+    W.R.mesh.model = M4.mul(M4.T(shx,0,0), leafModel(W.R, W, ang));
+    // ribbon: slips down, tumbles and vanishes
+    const c = W.rib.c, ready = isUnlocked(W.d) && W.state === 0;
+    const pulse = ready ? 1 + .05*Math.sin(t*3.2) : 1;
+    const fall = rp*rp, sc = Math.max(1e-3, (1 - sstep(.55, 1, rp)) * pulse);
+    W.rib.mesh.model = M4.chain(M4.T(c[0]+shx, c[1] - fall*2.2, c[2] + rp*.5), M4.RZ(rp*1.1), M4.RX(-rp*.8), M4.S(sc,sc,sc));
+    // light inside
+    const op = W.state === 1 ? 1 : W.state === 2 ? sstep(.4, 2.2, t - W.t0) : 0;
+    WGLOW[W.d] = ENV.st.n*.55 + op*(.35 + ENV.st.n*.55);
+  });
+  WGLOW[9] = ENV.st.n*.65;
+  return anim;
+}
+
+function draw(t){
+  NOW = t;
+  camera(t);
+  const anim = updateDyn(t);
+  const E = ENV, st = E.st;
+  const lkey = E.L.map(v=>v.toFixed(3)).join();
+  if (lkey !== lastL) { smDirty = true; lastL = lkey; }
+  const LVP = lightVP(E.L);
+  if (smDirty || anim) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, smFB); gl.viewport(0,0,SM,SM); gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST); gl.useProgram(P_SH.p); gl.uniformMatrix4fv(P_SH.U.u_lvp,false,LVP);
+    gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 3);
+    for (const m of [world, ...dyn]) { gl.uniformMatrix4fv(P_SH.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); smDirty = false;
+  }
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  // sky
+  gl.disable(gl.DEPTH_TEST); gl.depthMask(false);
+  const S = P_SKY;
+  gl.useProgram(S.p);
+  const setSky = (P) => {
+    gl.uniform3fv(P.U.u_zen, st.zen); gl.uniform3fv(P.U.u_hor, st.hor); gl.uniform3fv(P.U.u_glow, st.glow); gl.uniform1f(P.U.u_gi, st.gi); gl.uniform3fv(P.U.u_sunSky, E.sunSky);
+  };
+  setSky(S);
+  gl.uniformMatrix4fv(S.U.u_ivp,false,IVP); gl.uniform3fv(S.U.u_cam,CAM); gl.uniform1f(S.U.u_t,t); gl.uniform1f(S.U.u_n,st.n); gl.uniform1f(S.U.u_exp,st.ex);
+  gl.uniform3fv(S.U.u_moonSky,E.moonSky); gl.uniform3fv(S.U.u_moonL,E.moonL); gl.uniform1f(S.U.u_sunVis,E.sunVis); gl.uniform1f(S.U.u_moonVis,E.moonVis); gl.uniform3fv(S.U.u_sunDisk,E.sunDisk);
+  gl.uniform3fv(S.U.u_cl,st.cl); gl.uniform3fv(S.U.u_cs,st.cs); gl.uniform1f(S.U.u_cover,st.cover); gl.uniform1f(S.U.u_cA,st.ca);
+  gl.bindVertexArray(skyVAO); gl.drawArrays(gl.TRIANGLES,0,3);
+  // scene
+  gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
+  const P = P_MAIN; gl.useProgram(P.p); setSky(P);
+  gl.uniformMatrix4fv(P.U.u_vp,false,VP); gl.uniformMatrix4fv(P.U.u_lvp,false,LVP);
+  gl.uniform3fv(P.U.u_cam,CAM); gl.uniform3fv(P.U.u_L,E.L); gl.uniform3fv(P.U.u_Lcol,E.Lcol);
+  const aI = st.aI; gl.uniform3fv(P.U.u_ambS, st.aS.map(v=>v*aI)); gl.uniform3fv(P.U.u_ambG, st.aG.map(v=>v*aI));
+  gl.uniform1f(P.U.u_n,st.n); gl.uniform1f(P.U.u_t,t); gl.uniform1f(P.U.u_exp,st.ex); gl.uniform1f(P.U.u_fogD, .0008);
+  gl.uniform1fv(P.U.u_wg, WGLOW);
+  // warm point lights: windows, sconces, lamp
+  const pl = [];
+  WINS.forEach(W => { const g = WGLOW[W.d]; pl.push(W.cx, W.yb + W.h*.55, W.kind==='door'?1.2:.9, g * (W.kind==='door'?3.2:2.2)); });
+  pl.push(-1.6,2.35,.9, st.n*1.6, 1.6,2.35,.9, st.n*1.6, 7.0,4.9,3.6, st.n*6.0);
+  gl.uniform4fv(P.U.u_pl, new Float32Array(pl)); gl.uniform1i(P.U.u_npl, pl.length/4);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(P.U.u_sm, 0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.uniform1i(P.U.u_tags, 1);
+  for (const m of [world, ...dyn]) { gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
+  // clock hands keep the time shown in the sky
+  const hh = ((E.h%12)+12)%12, mm = (E.h%1)*60;
+  [hh/12, mm/60].forEach((f,i) => { const m = hands[i]; m.model = M4.chain(M4.T(0,13.05,0.3), M4.RZ(-f*Math.PI*2)); gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); });
+}
+
+/* ================= falling snow overlay ================= */
+const snowC = document.getElementById('snow'), sx = snowC.getContext('2d');
+let flakes = [];
+function makeFlakes(){ const n = Math.round(Math.min(170, W_*H_/5200)); flakes = Array.from({length:n}, () => ({x:Math.random()*W_, y:Math.random()*H_, z:Math.random(), w:Math.random()*6.28})); }
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function drawSnow(){
+  sx.clearRect(0,0,W_,H_);
+  for (const f of flakes){
+    const r = .5 + f.z*f.z*3.2, v = (.25 + f.z*.9)*(reduce?.3:1);
+    f.y += v; f.w += .01 + f.z*.01; f.x += Math.sin(f.w)*(.2 + f.z*.4);
+    if (f.y > H_+10) { f.y = -10; f.x = Math.random()*W_; }
+    if (f.z > .93) { const g = sx.createRadialGradient(f.x,f.y,0,f.x,f.y,r*2.4); g.addColorStop(0,'rgba(255,255,255,.45)'); g.addColorStop(1,'rgba(255,255,255,0)'); sx.fillStyle = g; sx.beginPath(); sx.arc(f.x,f.y,r*2.4,0,6.28); sx.fill(); }
+    else { sx.fillStyle = `rgba(255,255,255,${(.45+f.z*.45).toFixed(2)})`; sx.beginPath(); sx.arc(f.x,f.y,r,0,6.28); sx.fill(); }
+  }
+}
+(() => { const c = document.createElement('canvas'); c.width = c.height = 200; const x = c.getContext('2d'), d = x.createImageData(200,200);
+  for (let i=0;i<d.data.length;i+=4){ const v = Math.random()*255; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; }
+  x.putImageData(d,0,0); document.getElementById('grain').style.backgroundImage = `url(${c.toDataURL()})`; })();
+
 /* ================= start ================= */
-const nowHour = () => { const d = new Date(); return d.getHours() + d.getMinutes()/60; };
+const nowHour = () => { const d = new Date(); return d.getHours() + d.getMinutes()/60 + d.getSeconds()/3600; };
 let HOUR = HOUR_OVERRIDE ?? nowHour();
-addEventListener('resize', () => { resize(); });
-resize(); applyTime(HOUR);
-requestAnimationFrame(frame);
-if (HOUR_OVERRIDE == null && !PREVIEW) setInterval(() => { applyTime(nowHour()); refreshWindows(false); }, 60000);
+ENV = computeEnv(HOUR);
+addEventListener('resize', resize); resize();
+updateStatus();
+const t0 = performance.now();
+function loop(){
+  const t = (performance.now() - t0)/1000;
+  if (HOUR_OVERRIDE == null && !PREVIEW && Math.floor(t) % 20 === 0) ENV = computeEnv(nowHour());
+  draw(t); drawSnow();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+if (!PREVIEW) setInterval(updateStatus, 60000);
 if (PREVIEW) {
   document.body.classList.add('has-preview');
   const p = document.getElementById('preview'), s = document.getElementById('hslider'), l = document.getElementById('hlabel');
   p.classList.add('on'); s.value = HOUR;
-  const lab = h => { const m = Math.round(h*60) % 1440; l.textContent = String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); };
+  const lab = h => { const m = Math.round(h*60)%1440; l.textContent = String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); };
   lab(HOUR);
-  let pend = null;
-  s.oninput = () => { lab(+s.value); if (!pend) pend = requestAnimationFrame(() => { pend = null; applyTime(+s.value); }); };
-  document.getElementById('reset').onclick = () => { opened.clear(); saveOpened(); refreshWindows(false); };
+  s.oninput = () => { lab(+s.value); ENV = computeEnv(+s.value); };
+  document.getElementById('reset').onclick = () => { opened.clear(); saveOpened(); WINS.forEach(W => W.state = 0); updateStatus(); };
 }
-refreshWindows(true);
 </script>
 </body>
 </html>
