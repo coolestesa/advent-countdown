@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Advent Mockups</title>
+<style>
+ body{margin:0;font-family:Georgia,serif;background:#f4efe6;color:#222;padding:0 14px}
+ h2{text-align:center;letter-spacing:4px;margin:36px 0 6px;font-size:20px}
+ .note{text-align:center;font-size:13px;opacity:.6;margin-bottom:18px}
+ .theatre{max-width:520px;margin:0 auto 50px;padding:18px;background:repeating-linear-gradient(90deg,#c8102e 0 18px,#fff 18px 36px);border-radius:160px 160px 12px 12px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+ .stage{background:#fdf8ef;border-radius:140px 140px 8px 8px;padding:50px 14px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+ .theatre .box{aspect-ratio:3/4;background:#1d3c34;border-radius:50px 50px 6px 6px;color:#f3d27a;border:2px solid #f3d27a}
+ .velvet{max-width:520px;margin:0 auto 50px;padding:18px;border-radius:14px;background:radial-gradient(circle at 30% 20%,#2f6b4f,#0f2e22);display:grid;grid-template-columns:repeat(4,1fr);gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+ .velvet .box{aspect-ratio:1;border:1px solid #d4af37;border-radius:6px;background:linear-gradient(145deg,#1f4a37,#123526);color:#d4af37;text-shadow:0 0 6px rgba(212,175,55,.6)}
+ .box{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .5s;font-size:22px;-webkit-tap-highlight-color:transparent}
+ .box small{font-size:10px;opacity:.7;margin-top:4px}
+ .box.locked{opacity:.55}
+ .theatre .box.open{background:#f3d27a;color:#1d3c34}
+ .velvet .box.open{background:#d4af37;color:#123526;text-shadow:none}
+ .box.shake{animation:sh .4s}
+ @keyframes sh{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+ .msg{grid-column:1/-1;text-align:center;min-height:22px;font-size:15px;padding-top:6px}
+ .theatre .msg{color:#c8102e}.velvet .msg{color:#d4af37}
+</style>
+</head>
+<body>
+<h2>A · THEATRE</h2><div class="note">剧院立面 · 拱门小窗</div>
+<div class="theatre"><div class="stage" id="a"></div></div>
+<h2>B · VELVET &amp; GOLD</h2><div class="note">丝绒质感 · 烫金数字</div>
+<div class="velvet" id="b"></div>
+<script>
+// 12月25日 0:00 起，每天解锁一个，共8天到1月1日
+const START=new Date(2026,11,25,0,0);
+const gifts=['圣诞快乐！','一张照片','一首歌','一个小愿望','一段回忆','一个笑话','一张手绘','新年快乐！'];
+const PREVIEW=location.search.includes('preview');
+function build(id){
+ const wrap=document.getElementById(id);
+ const msg=document.createElement('div');msg.className='msg';
+ gifts.forEach((g,i)=>{
+  const d=new Date(START.getTime()+i*86400000);
+  const b=document.createElement('div');
+  const locked=!PREVIEW&&new Date()<d;
+  b.className='box'+(locked?' locked':'');
+  b.innerHTML=(i+1)+'<small>'+(d.getMonth()+1)+'/'+d.getDate()+'</small>';
+  b.onclick=()=>{
+   if(locked){b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');msg.textContent='还没到时间哦 · '+(d.getMonth()+1)+'月'+d.getDate()+'日解锁';return;}
+   b.classList.add('open');b.innerHTML='✦';msg.textContent=g;
+  };
+  wrap.appendChild(b);
+ });
+ wrap.appendChild(msg);
+}
+build('a');build('b');
+</script>
+</body>
+</html>
