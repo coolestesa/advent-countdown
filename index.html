@@ -25,7 +25,7 @@ body{font-family:'Cormorant Garamond','Noto Serif TC',Georgia,serif;color:#fff;
 #grain{z-index:5;pointer-events:none;opacity:.07;mix-blend-mode:overlay;background-size:200px 200px}
 #title{position:fixed;z-index:8;left:0;right:0;top:calc(env(safe-area-inset-top) + 3.6vh);text-align:center;pointer-events:none;
   text-shadow:0 1px 12px rgba(5,10,40,.55),0 0 2px rgba(5,10,40,.35)}
-#title .sub{font-size:11px;letter-spacing:.46em;font-weight:600;opacity:.92;padding-left:.46em;font-variant-numeric:tabular-nums;transition:color .8s,text-shadow .8s}
+#title .sub{font-size:13.5px;letter-spacing:.4em;font-weight:600;opacity:.92;padding-left:.46em;font-variant-numeric:tabular-nums;transition:color .8s,text-shadow .8s}
 #title .sub.day{color:#1c2a4a;opacity:1;text-shadow:0 0 8px rgba(255,255,255,.75),0 0 2px rgba(255,255,255,.6)}
 #title h1{font-style:italic;font-weight:500;font-size:clamp(24px,7.3vw,46px);line-height:1.1;color:#f1d89b;margin-top:4px;white-space:nowrap}
 #status[hidden]{display:none!important}
@@ -95,16 +95,19 @@ const FONT = 'B';    // 开窗后数字的字体（A–J 花体）
 /* ================= basics ================= */
 const Q = new URLSearchParams(location.search);
 const PREVIEW = Q.has('preview');
+// 测试用：?now=2026-12-25T18:58 假装现在是那个时间（不影响她的真实进度）
+const FAKE_OFF = Q.has('now') && !isNaN(Date.parse(Q.get('now'))) ? Date.parse(Q.get('now')) - Date.now() : 0;
+const now = () => new Date(Date.now() + FAKE_OFF);
 const HOUR_OVERRIDE = Q.has('hour') ? parseFloat(Q.get('hour')) : null;
 const dayDate = d => new Date(YEAR, 11, 24 + d);   // day 1 = 12/25
 const unlockAt = d => new Date(YEAR, 11, 24 + d, OPEN_HOUR);
 const NEWYEAR = new Date(YEAR + 1, 0, 1);
 const DAYS = CONTENT.length, DOOR = 8;
 let FW_PREVIEW = false;
-const isNewYear = () => PREVIEW ? FW_PREVIEW : new Date() >= NEWYEAR;
-const availCount = () => PREVIEW ? DAYS : CONTENT.filter((_,i) => new Date() >= unlockAt(i+1)).length;
+const isNewYear = () => PREVIEW ? FW_PREVIEW : now() >= NEWYEAR;
+const availCount = () => PREVIEW ? DAYS : CONTENT.filter((_,i) => now() >= unlockAt(i+1)).length;
 const fmt = dt => `${dt.getMonth()+1}月${dt.getDate()}日`;
-const KEY = PREVIEW ? 'ww7-preview' : 'ww7-opened';
+const KEY = PREVIEW ? 'ww7-preview' : FAKE_OFF ? 'ww7-test' : 'ww7-opened';
 let opened = {};   // window slot -> which day's gift it holds
 try { opened = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e) {}
 const saveOpened = () => { try { localStorage.setItem(KEY, JSON.stringify(opened)); } catch(e) {} };
@@ -342,9 +345,7 @@ function buildHouse(G){
   // a little apple (Chia = Apple)
   const appleR = (a) => { let best = 0; for (const cx of [-.1,.1]) { const dx = Math.cos(a), dy = Math.sin(a), b = -(dx*cx), c = cx*cx - .3*.3, disc = b*b - c; if (disc > 0) best = Math.max(best, -b + Math.sqrt(disc)); } return best; };
   const apple = [[0,6.12]]; for (let i=0;i<=48;i++){ const a = i/48*Math.PI*2; const r = appleR(a); apple.push([Math.cos(a)*r, 6.12 + Math.sin(a)*r*(Math.sin(a) < 0 ? 1.08 : .95)]); }
-  G.prismZ(apple,0.15,0.24,lin('#b3172a'),MAT(GOLD));
-  G.box(-.025,0,0,.025,.2,.04,lin('#5a3a1e'),MAT(PLAIN),M4.chain(M4.T(0,6.36,0.17),M4.RZ(-.25)));
-  G.prismZ(Array.from({length:16},(_,i)=>{const a=i/16*Math.PI*2; return [Math.cos(a)*.13, Math.sin(a)*.055];}),0.17,0.22,C.gold,MAT(GOLD),M4.chain(M4.T(.12,6.5,0),M4.RZ(.45)));
+  appleGeo(G, 0, 6.12, 0.24, .36);
   // steps
   G.box(-1.6,0,0,1.6,0.16,0.9,C.plinth,S); G.box(-1.3,0.16,0,1.3,0.32,0.45,C.plinth,S);
   // sconces by the door
@@ -355,6 +356,36 @@ function buildHouse(G){
     G.box(x-.11,2.18,0.25,x+.11,2.52,0.47,C.warm,MAT(LAMP));
     G.taper(x,2.55,0.36,.32,.32,2.72,.04,.04,C.iron,MAT(IRON,1));
   });
+}
+
+function appleGeo(G, cx, cy, cz, R){
+  // round apple with dimples top & bottom, slightly wider shoulders
+  const P = (th, ph) => { const s = Math.sin(ph), c = Math.cos(ph);
+    const sh = 1 + .1*Math.max(c,0) - .06*Math.max(-c,0);
+    const dim = .3*Math.exp(-s*s*14) * Math.sign(c);
+    return [cx + R*s*Math.cos(th)*sh, cy + R*(c*.92 - dim), cz + R*.78*s*Math.sin(th)*sh]; };
+  const nu = 28, nv = 18, col = lin('#b3172a'), m = MAT(GOLD);
+  const nrm = (th, ph) => { const e = 1e-3, p = P(th,ph), a = P(th+e,ph), b = P(th,ph+e);
+    const u = [a[0]-p[0],a[1]-p[1],a[2]-p[2]], v = [b[0]-p[0],b[1]-p[1],b[2]-p[2]];
+    let n = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]]; const l = Math.hypot(...n) || 1; n = n.map(q => -q/l);
+    const o = [p[0]-cx, p[1]-cy, p[2]-cz]; if (n[0]*o[0]+n[1]*o[1]+n[2]*o[2] < 0) n = n.map(q => -q); return n; };
+  for (let i=0;i<nu;i++) for (let j=0;j<nv;j++){
+    const t0 = i/nu*Math.PI*2, t1 = (i+1)/nu*Math.PI*2, p0 = .02+j/nv*(Math.PI-.04), p1 = .02+(j+1)/nv*(Math.PI-.04);
+    const A = [t0,p0], B = [t1,p0], Cc = [t1,p1], D = [t0,p1];
+    for (const tri of [[A,B,Cc],[A,Cc,D]]) for (const q of tri) G.v(P(q[0],q[1]), nrm(q[0],q[1]), col, m, [0,0]);
+  }
+  // stem
+  G.cyl(0,0,0,.03,.24,8,lin('#5a3a1e'),MAT(PLAIN),M4.chain(M4.T(cx+.01,cy+R*.72,cz),M4.RZ(-.3)),true,.022);
+  // gold leaf: two curved halves folded along the midrib
+  const leaf = M4.chain(M4.T(cx+.05,cy+R*.95,cz+.02), M4.RZ(.5));
+  const L = 7;
+  for (const sd of [-1,1]) for (let k=0;k<L;k++){
+    const f = (t, w) => { const x = .02 + t*.26, half = Math.sin(Math.PI*t)*.07*w; return [x, sd*half, Math.abs(half)*.9 - .02*Math.sin(Math.PI*t)]; };
+    const a0 = f(k/L,0), a1 = f((k+1)/L,0), b0 = f(k/L,1), b1 = f((k+1)/L,1);
+    const nn = [0, -sd*.35, 1];
+    G.quad(M4.xf(leaf,a0),M4.xf(leaf,a1),M4.xf(leaf,b1),M4.xf(leaf,b0),G.N(leaf,nn),C.gold,MAT(GOLD));
+    G.quad(M4.xf(leaf,a0),M4.xf(leaf,b0),M4.xf(leaf,b1),M4.xf(leaf,a1),G.N(leaf,nn.map(q=>-q)),C.gold,MAT(GOLD));
+  }
 }
 
 function railing(G, x0, x1, y, z, h, col=C.iron){
@@ -547,9 +578,7 @@ function buildWorld(){
   G.box(-46,0,-318,-30,118,-306,lin('#8a919a'),MAT(CITY)); G.box(-44,118,-316,-32,124,-308,lin('#8a919a'),MAT(CITY));
   G.box(18,0,-360,32,96,-346,lin('#a7b0b8'),MAT(CITY)); G.taper(25,96,-353,14,14,112,2,2,lin('#a7b0b8'),MAT(CITY));
   // ferris wheel
-  const fw = M4.chain(M4.T(-34,26,-170), M4.RY(.35));
-  G.torus(22,.5,48,6,lin('#c9ced6'),MAT(PLAIN),fw); G.torus(20.5,.25,48,4,lin('#c9ced6'),MAT(PLAIN),fw);
-  for (let i=0;i<24;i++){ const a=i/24*Math.PI*2; G.box(-.1,0,-.1,.1,21,.1,lin('#c9ced6'),MAT(PLAIN),M4.chain(fw,M4.RZ(a))); G.box(-1,-1.2,-1,1,1.2,1,lin(['#e46a6a','#e8c36a','#7cc0a0','#7aa6e0'][i%4]),MAT(PLAIN),M4.chain(fw,M4.T(Math.cos(a)*22,Math.sin(a)*22,0))); G.sphere(Math.cos(a)*22.6,Math.sin(a)*22.6,0,.5,.5,.5,lin(['#ff8a8a','#ffe08a','#9affd0','#9ac8ff'][i%4]),MAT(FAIRY),fw,5,4); }
+  G.cyl(0,0,0,1.2,2.4,10,lin('#c9ced6'),MAT(PLAIN),M4.chain(M4.T(-34,26,-171.2),M4.RX(Math.PI/2)));
   G.box(-35,0,-171,-33,26,-169,lin('#c9ced6'),MAT(PLAIN),M4.chain(M4.T(-34,0,-170),M4.RZ(.35),M4.T(34,0,170)));
   G.box(-35,0,-171,-33,26,-169,lin('#c9ced6'),MAT(PLAIN),M4.chain(M4.T(-34,0,-170),M4.RZ(-.35),M4.T(34,0,170)));
   // grand hall on a hill
@@ -557,9 +586,9 @@ function buildWorld(){
   const hall = (y0, w, d) => { G.box(32-w/2,y0,-250-d/2,32+w/2,y0+6,-250+d/2,lin('#b8423a'),MAT(PLAIN)); G.taper(32,y0+6,-250,w+8,d+8,y0+8,w+4,d+4,lin('#d99a3a'),MAT(PLAIN)); G.taper(32,y0+8,-250,w+4,d+4,y0+12,w*.45,d*.4,lin('#d99a3a'),MAT(PLAIN)); };
   hall(19,40,16); hall(31,26,12); G.box(32-24,19,-250-9,32+24,20,-250+9,lin('#e8e0d0'),MAT(PLAIN));
   // mountains
-  const ridge = (z0, depth, base, amp, seed, col) => {
-    const RR = rng(seed), ph = [RR()*6,RR()*6,RR()*6,RR()*6], nx = 140, nz = 8, x0 = -2600, x1 = 2600;
-    const H = (x, t) => { const p = base + amp*(.55*(.5+.5*Math.sin(x*.0021+ph[0])) + .3*(.5+.5*Math.sin(x*.0057+ph[1])) + .15*(.5+.5*Math.sin(x*.013+ph[2])) + .06*Math.sin(x*.031+ph[3])); return p*Math.pow(Math.sin(Math.PI*t), .7); };
+  const ridge = (z0, depth, base, amp, seed, col, wx = 0, ww = 0) => {
+    const RR = rng(seed), ph = [RR()*6,RR()*6,RR()*6,RR()*6], nx = 140, nz = ww ? 14 : 8, x0 = ww ? wx-ww : -2600, x1 = ww ? wx+ww : 2600;
+    const H = (x, t) => { const p = base + amp*(.55*(.5+.5*Math.sin(x*.0021+ph[0])) + .3*(.5+.5*Math.sin(x*.0057+ph[1])) + .15*(.5+.5*Math.sin(x*.013+ph[2])) + .06*Math.sin(x*.031+ph[3])); const win = ww ? Math.pow(Math.max(0, 1 - Math.pow((x-wx)/ww, 2)), 1.3) : 1; return p*win*Math.pow(Math.sin(Math.PI*t), .7); };
     const pt = (i,j) => { const x = x0+(x1-x0)*i/nx, t = j/nz; return [x, H(x,t), z0 - depth*t]; };
     for (let i=0;i<nx;i++) for (let j=0;j<nz;j++){
       const a=pt(i,j), b=pt(i+1,j), c=pt(i+1,j+1), dd=pt(i,j+1);
@@ -568,9 +597,10 @@ function buildWorld(){
       G.quad(a,b,c,dd,n,col,MAT(MOUNT));
     }
   };
-  ridge(-560,420,92,210,11,lin('#7f9c92'));
-  ridge(-900,560,160,270,12,lin('#90aaa5'));
-  ridge(-1350,700,235,320,13,lin('#a1b6b5'));
+  ridge(-560,420,100,235,11,lin('#7f9c92'));
+  ridge(-800,400,260,190,12,lin('#86a39a'), -160, 420);   // behind the house, left
+  ridge(-1250,500,470,260,13,lin('#9cb1c0'), 190, 560);  // farthest, behind 101
+  ridge(-1150,600,150,200,14,lin('#9db3b0'));
   return G;
 }
 
@@ -655,7 +685,7 @@ void main(){
     E+=v_col*v_mat.w*0.; }
   else if(id==11){ alb*=.7+.45*fbm3(wp.xz*.01+wp.y*.004); }
   else if(id==12){ float rim=pow(1.-max(dot(N,V),0.),2.); alb*=.75+.9*rim; spec=.2; shin=10.; }
-  else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA; E=vec3(.006,.095,.03)*(1.3+u_n*.4); }
+  else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA*.92; E=mix(vec3(.03,.015,.005),vec3(1.,.66,.2)*(.95+u_n*.4)*mix(.7,1.15,v_uv.y),t.r); }
   else if(id==14){ lit=false; E=alb*(.6+u_n*3.2)*(v_mat.w>.5?.45:1.); }
   else if(id==16){ lit=false; E=alb*u_n*(1.8+1.4*sin(u_t*2.5+hash(wp.xy*3.1)*30.)); }
   if(snowy>.5){ float sn=smoothstep(.62,.86,N.y+(noise(wp.xz*5.+wp.y)-.5)*.3); alb=mix(alb,vec3(.9,.92,.97),sn); spec=mix(spec,.2,sn); shin=mix(shin,40.,sn); }
@@ -674,7 +704,7 @@ void main(){
     c+=alb*(amb*ao+u_Lcol*nl*sh+pl+fl)+u_Lcol*spec*pow(max(dot(N,H),0.),shin)*sh*nl;
   }
   float dist=length(wp-u_cam);
-  float f=1.-exp(-dist*u_fogD);
+  float f=(1.-exp(-dist*u_fogD))*(id==11?.62:1.);
   c=mix(c,skyBase(-V)*1.02,f);
   o=vec4(outCol(c*u_exp),outA);
 }`;
@@ -803,7 +833,8 @@ function buildNumerals(){
   const c = document.createElement('canvas'); c.width = 7*128; c.height = 128; const x = c.getContext('2d');
   x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.lineJoin = 'round';
   x.font = `${NF.css} 104px "${NF.name}", "Bodoni 72", Didot, Georgia, serif`;
-  for (let i=0;i<7;i++){ x.setTransform(1,0,-.24,1,i*128+64-10,102); x.fillStyle = x.strokeStyle = '#fff'; x.lineWidth = 3.2; x.strokeText(String(i+1), 0, 0); x.fillText(String(i+1), 0, 0); }
+  for (let i=0;i<7;i++){ x.setTransform(1,0,-.24,1,i*128+64-10,102); x.shadowColor = 'rgba(0,0,0,.85)'; x.shadowBlur = 7; x.shadowOffsetX = 2; x.shadowOffsetY = 3; x.fillStyle = x.strokeStyle = '#000'; x.lineWidth = 3.2; x.strokeText(String(i+1), 0, 0); x.fillText(String(i+1), 0, 0);
+    x.shadowColor = 'transparent'; x.fillStyle = x.strokeStyle = '#fff'; x.strokeText(String(i+1), 0, 0); x.fillText(String(i+1), 0, 0); }
   x.setTransform(1,0,0,1,0,0);
   gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c); gl.generateMipmap(gl.TEXTURE_2D);
@@ -828,6 +859,11 @@ WINS.forEach(W => {
     g.quad([-sz/2,-sz/2,0],[sz/2,-sz/2,0],[sz/2,sz/2,0],[-sz/2,sz/2,0],[0,0,1],C.white,MAT(18),[[0,0],[1,0],[1,1],[0,1]]); W.num = upload(g); }
   dyn.push(W.L.mesh, W.R.mesh, W.rib.mesh);
 });
+const WHEEL_AT = M4.chain(M4.T(-34,26,-170), M4.RY(.35));
+const wheel = upload((() => { const G = new Geo(), wc = lin('#c9ced6');
+  G.torus(22,.5,48,6,wc,MAT(PLAIN),M4.id()); G.torus(20.5,.25,48,4,wc,MAT(PLAIN),M4.id());
+  for (let i=0;i<24;i++){ const a=i/24*Math.PI*2; G.box(-.1,0,-.1,.1,21,.1,wc,MAT(PLAIN),M4.RZ(a)); G.box(-1,-1.2,-1,1,1.2,1,lin(['#e46a6a','#e8c36a','#7cc0a0','#7aa6e0'][i%4]),MAT(PLAIN),M4.T(Math.cos(a)*22,Math.sin(a)*22,0)); G.sphere(Math.cos(a)*22.6,Math.sin(a)*22.6,0,.5,.5,.5,lin(['#ff8a8a','#ffe08a','#9affd0','#9ac8ff'][i%4]),MAT(FAIRY),null,5,4); }
+  return G; })());
 const hands = [0.42, 0.6].map((len,i) => { const g = new Geo(); g.box(-.025-.01*i,-.05,0,.025+.01*i,len,.03,C.iron,MAT(IRON)); return upload(g); });
 
 /* ================= time of day ================= */
@@ -939,10 +975,10 @@ function showCard(slot, delay){
 }
 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('on'); });
 function lockedMsg(){
-  const now = new Date(), av = availCount();
+  const nw = now(), av = availCount();
   if (av >= DAYS) return '七份礼物都拆完啦，新年零点看看天空 ✦';
-  const next = unlockAt(av + 1), ms = next - now;
-  const sameDay = next.toDateString() === now.toDateString();
+  const next = unlockAt(av + 1), ms = next - nw;
+  const sameDay = next.toDateString() === nw.toDateString();
   if (av === 0 && !sameDay) return `12月25日晚上7点开第一扇窗哦 · 还有 ${Math.ceil(ms/864e5)} 天`;
   if (sameDay) { const h = Math.floor(ms/36e5), m = Math.ceil(ms%36e5/6e4); return `今晚 7 点才能开窗哦 · 还有 ${h ? h+' 小时 ' : ''}${m} 分钟`; }
   return '今天的礼物拆过啦，明晚 7 点再来 ✦';
@@ -952,7 +988,7 @@ function checkUnlock(){ const av = availCount(); if (av > lastAvail && canOpen()
 function updateStatus(){
   const el = document.getElementById('status'), av = availCount(), used = usedCount();
   if (isNewYear()) el.textContent = 'Happy New Year ✦';
-  else if (av === 0) el.textContent = `第一份礼物 12月25日 打开 · 还有 ${Math.ceil((dayDate(1) - new Date())/864e5)} 天`;
+  else if (av === 0) el.textContent = `第一份礼物 12月25日 打开 · 还有 ${Math.ceil((dayDate(1) - now())/864e5)} 天`;
   else if (used < av) el.textContent = av - used > 1 ? `今天可以挑 ${av-used} 扇窗打开 ✦` : '今天可以挑一扇窗打开 ✦';
   else if (av < DAYS) el.textContent = '明天零点再来拆下一份 ✦';
   else el.textContent = '新年零点，记得看看天空 ✦';
@@ -987,7 +1023,7 @@ function updateDyn(t){
     const pulse = ready ? 1 + .05*Math.sin(t*3.2) : 1;
     const fall = rp*rp, sc = Math.max(1e-3, (1 - sstep(.55, 1, rp)) * pulse);
     W.rib.mesh.model = M4.chain(M4.T(c[0]+shx, c[1] - fall*2.2, c[2] + rp*.5), M4.RZ(rp*1.1), M4.RX(-rp*.8), M4.S(sc,sc,sc));
-    if (W.num) { const a = W.state ? 1 : 0, ss = 1.55;
+    if (W.num) { const a = W.state ? 1 : 0, ss = 2.05;
       W.numA = a; W.numM = M4.chain(M4.T(W.cx, W.yb + W.h*.5, -.2), M4.S(ss,ss,ss)); }
     // light inside
     const op = W.state === 1 ? 1 : W.state === 2 ? sstep(.4, 2.2, t - W.t0) : 0;
@@ -1044,6 +1080,7 @@ function draw(t){
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(P.U.u_sm, 0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.uniform1i(P.U.u_tags, 1);
   for (const m of [world, ...dyn]) { gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
+  wheel.model = M4.chain(WHEEL_AT, M4.RZ(-t*.045)); gl.uniformMatrix4fv(P.U.u_model,false,wheel.model); gl.bindVertexArray(wheel.vao); gl.drawArrays(gl.TRIANGLES,0,wheel.count);
   // clock hands keep the time shown in the sky
   const hh = ((E.h%12)+12)%12, mm = (E.h%1)*60;
   [hh/12, mm/60].forEach((f,i) => { const m = hands[i]; m.model = M4.chain(M4.T(0,13.05,0.3), M4.RZ(-f*Math.PI*2)); gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); });
@@ -1151,7 +1188,7 @@ function drawSnow(){
   x.putImageData(d,0,0); document.getElementById('grain').style.backgroundImage = `url(${c.toDataURL()})`; })();
 
 /* ================= start ================= */
-const nowHour = () => { const d = new Date(); return d.getHours() + d.getMinutes()/60 + d.getSeconds()/3600; };
+const nowHour = () => { const d = now(); return d.getHours() + d.getMinutes()/60 + d.getSeconds()/3600; };
 let HOUR = HOUR_OVERRIDE ?? nowHour();
 ENV = computeEnv(HOUR);
 addEventListener('resize', resize); resize();
@@ -1161,7 +1198,7 @@ const MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','
 let SHOW_H = null, lastT = 0, lastClock = '', lastDay = null;
 const clockEl = document.getElementById('clock');
 function updateClock(){
-  const d = new Date(); let hh = d.getHours(), mm = d.getMinutes(), ss = d.getSeconds();
+  const d = now(); let hh = d.getHours(), mm = d.getMinutes(), ss = d.getSeconds();
   if (SHOW_H != null) { const m = Math.floor(SHOW_H*60) % 1440; hh = Math.floor(m/60); mm = m % 60; }
   const txt = `${WK[d.getDay()]} · ${MON[d.getMonth()]} ${d.getDate()} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
   if (txt !== lastClock) { clockEl.textContent = txt; lastClock = txt; }
