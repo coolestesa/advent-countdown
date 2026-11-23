@@ -27,6 +27,7 @@ body{font-family:'Cormorant Garamond','Noto Serif TC',Georgia,serif;color:#fff;
   text-shadow:0 1px 12px rgba(5,10,40,.55),0 0 2px rgba(5,10,40,.35)}
 #title .sub{font-size:11px;letter-spacing:.46em;font-weight:600;opacity:.92;padding-left:.46em}
 #title h1{font-style:italic;font-weight:500;font-size:clamp(24px,7.3vw,46px);line-height:1.1;color:#f1d89b;margin-top:4px;white-space:nowrap}
+#status[hidden]{display:none!important}
 #status{position:fixed;z-index:9;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 3.6vh + clamp(56px,13.5vw,84px));
   font-family:'Noto Serif TC',serif;font-size:12px;letter-spacing:.08em;white-space:nowrap;padding:5px 14px;border-radius:999px;
   background:rgba(12,16,40,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(241,216,155,.35);color:#f8efd8}
@@ -63,7 +64,7 @@ body.has-preview #status{top:calc(env(safe-area-inset-top) + 52px + clamp(56px,1
 <div id="vig"></div>
 <div id="grain"></div>
 <div id="title"><div class="sub" id="clock">&nbsp;</div><h1>Chia's Countdown Calendar</h1></div>
-<div id="status"></div>
+<div id="status" hidden></div>
 <div id="toast"></div>
 <div id="preview"><span id="hlabel">--:--</span><input id="hslider" type="range" min="0" max="24" step="0.05"><button id="fwbtn">烟花</button><button id="reset">重置</button></div>
 <div id="modal"><div class="card" id="card"></div></div>
@@ -87,7 +88,7 @@ const CONTENT = [
 // 新年零点：大门自动打开、开始放烟花时的那张卡片
 const NEW_YEAR = { title: '新年快乐', text: '2027，\n我们也要一起。' };
 const YEAR = 2026;   // 12/25 所在的年份
-const FONT = 'A';    // 开窗后数字的字体，选项见 fonts.html（A–H）
+const FONT = 'B';    // 开窗后数字的字体（A–J 花体）
 
 /* ================= basics ================= */
 const Q = new URLSearchParams(location.search);
@@ -504,12 +505,12 @@ function buildWorld(){
   // snow mounds
   for (let i=0;i<26;i++){ const x=(R()<.5?-1:1)*(3+R()*14), z=-4+R()*14; if (Math.abs(x)<7 && z<2) continue; G.sphere(x,0,z,1+R()*2,.25+R()*.35,1+R()*1.6,C.snow,MAT(GROUND,1)); }
   // street lamp
-  G.cyl(8.6,0,4.6,.09,4.6,10,C.iron,MAT(IRON,1)); G.cyl(8.6,0,4.6,.22,.5,10,C.iron,MAT(IRON,1));
-  G.box(8.38,4.6,4.38,8.82,5.15,4.82,C.warm,MAT(LAMP)); G.taper(8.6,5.15,4.6,.6,.6,5.45,.08,.08,C.iron,MAT(IRON,1));
-  G.box(8.34,4.56,4.34,8.86,4.62,4.86,C.iron,MAT(IRON,1));
-  for (const [x,z] of [[8.36,4.36],[8.84,4.36],[8.36,4.84],[8.84,4.84]]) G.box(x-.02,4.6,z-.02,x+.02,5.15,z+.02,C.iron,MAT(IRON));
+  G.cyl(5.5,0,4.0,.09,4.6,10,C.iron,MAT(IRON,1)); G.cyl(5.5,0,4.0,.22,.5,10,C.iron,MAT(IRON,1));
+  G.box(5.28,4.6,3.78,5.72,5.15,4.22,C.warm,MAT(LAMP)); G.taper(5.5,5.15,4.0,.6,.6,5.45,.08,.08,C.iron,MAT(IRON,1));
+  G.box(5.24,4.56,3.74,5.76,4.62,4.26,C.iron,MAT(IRON,1));
+  for (const [x,z] of [[5.26,3.76],[5.74,3.76],[5.26,4.24],[5.74,4.24]]) G.box(x-.02,4.6,z-.02,x+.02,5.15,z+.02,C.iron,MAT(IRON));
   // pines
-  pine(G,-7.3,2.4,8.8,R); pine(G,7.9,1.4,9.3,R); pine(G,-10.8,-5,7,R); pine(G,11.2,-6.5,7.5,R); pine(G,-14,-1,8,R); pine(G,14.5,-2,6.5,R);
+  pine(G,-7.1,1.6,7.0,R); pine(G,7.5,0.4,7.4,R); pine(G,-10.8,-5,7,R); pine(G,11.2,-6.5,7.5,R); pine(G,-14,-1,8,R); pine(G,14.5,-2,6.5,R);
   pine(G,-18,-8,9,R); pine(G,19,-10,8.5,R); pine(G,-12,6,5.5,R); pine(G,12.5,5.5,5,R);
 
   // Taipei walk-ups (near background)
@@ -645,7 +646,7 @@ void main(){
     E+=v_col*v_mat.w*0.; }
   else if(id==11){ alb*=.7+.45*fbm3(wp.xz*.01+wp.y*.004); }
   else if(id==12){ float rim=pow(1.-max(dot(N,V),0.),2.); alb*=.75+.9*rim; spec=.2; shin=10.; }
-  else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA; E=mix(vec3(.04,.02,.01),vec3(.98,.66,.24)*(.8+u_n*.4),t.r); }
+  else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA; E=vec3(.016,.20,.07)*(1.5+u_n*.6); }
   else if(id==14){ lit=false; E=alb*(.25+u_n*3.2)*(v_mat.w>.5?.6:1.); }
   else if(id==16){ lit=false; E=alb*u_n*(1.8+1.4*sin(u_t*2.5+hash(wp.xy*3.1)*30.)); }
   if(snowy>.5){ float sn=smoothstep(.62,.86,N.y+(noise(wp.xz*5.+wp.y)-.5)*.3); alb=mix(alb,vec3(.9,.92,.97),sn); spec=mix(spec,.2,sn); shin=mix(shin,40.,sn); }
@@ -776,14 +777,16 @@ gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE); gl.bindFramebuffer(gl.FRAMEBU
 // calligraphic numerals shown on opened windows
 const tagTex = gl.createTexture();
 const FONTS = {
-  A: {name:'Playfair Display', css:'italic 900', g:'Playfair+Display:ital,wght@1,900'},
-  B: {name:'Bodoni Moda', css:'900', g:'Bodoni+Moda:wght@900'},
-  C: {name:'Abril Fatface', css:'400', g:'Abril+Fatface'},
-  D: {name:'Cinzel Decorative', css:'900', g:'Cinzel+Decorative:wght@900'},
-  E: {name:'DM Serif Display', css:'italic 400', g:'DM+Serif+Display:ital@1'},
-  F: {name:'Lobster', css:'400', g:'Lobster'},
-  G: {name:'UnifrakturMaguntia', css:'400', g:'UnifrakturMaguntia'},
-  H: {name:'Rozha One', css:'400', g:'Rozha+One'},
+  A: {name:'Great Vibes', css:'400', g:'Great+Vibes'},
+  B: {name:'Pinyon Script', css:'400', g:'Pinyon+Script'},
+  C: {name:'Parisienne', css:'400', g:'Parisienne'},
+  D: {name:'Alex Brush', css:'400', g:'Alex+Brush'},
+  E: {name:'Dancing Script', css:'700', g:'Dancing+Script:wght@700'},
+  F: {name:'Playball', css:'400', g:'Playball'},
+  G: {name:'Yesteryear', css:'400', g:'Yesteryear'},
+  H: {name:'Pacifico', css:'400', g:'Pacifico'},
+  I: {name:'Tangerine', css:'700', g:'Tangerine:wght@700'},
+  J: {name:'Rouge Script', css:'400', g:'Rouge+Script'},
 };
 const NF = FONTS[(Q.get('font') || FONT).toUpperCase()] || FONTS.A;
 (() => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = `https://fonts.googleapis.com/css2?family=${NF.g}&display=swap`; document.head.appendChild(l); })();
@@ -791,7 +794,7 @@ function buildNumerals(){
   const c = document.createElement('canvas'); c.width = 7*128; c.height = 128; const x = c.getContext('2d');
   x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.lineJoin = 'round';
   x.font = `${NF.css} 104px "${NF.name}", "Bodoni 72", Didot, Georgia, serif`;
-  for (let i=0;i<7;i++){ x.strokeStyle = '#000'; x.lineWidth = 10; x.strokeText(String(i+1), i*128+64, 102); x.fillStyle = '#fff'; x.fillText(String(i+1), i*128+64, 102); }
+  for (let i=0;i<7;i++){ x.fillStyle = x.strokeStyle = '#fff'; x.lineWidth = 3.2; x.strokeText(String(i+1), i*128+64, 102); x.fillText(String(i+1), i*128+64, 102); }
   gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c); gl.generateMipmap(gl.TEXTURE_2D);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
@@ -963,7 +966,7 @@ function updateDyn(t){
     const pulse = ready ? 1 + .05*Math.sin(t*3.2) : 1;
     const fall = rp*rp, sc = Math.max(1e-3, (1 - sstep(.55, 1, rp)) * pulse);
     W.rib.mesh.model = M4.chain(M4.T(c[0]+shx, c[1] - fall*2.2, c[2] + rp*.5), M4.RZ(rp*1.1), M4.RX(-rp*.8), M4.S(sc,sc,sc));
-    if (W.num) { const a = W.state === 1 ? 1 : W.state === 2 ? sstep(1.3, 2.5, t - W.t0) : 0, ss = 1.3*(.82 + .18*ease(a));
+    if (W.num) { const a = W.state ? 1 : 0, ss = 1.55;
       W.numA = a; W.numM = M4.chain(M4.T(W.cx, W.yb + W.h*.5, -.2), M4.S(ss,ss,ss)); }
     // light inside
     const op = W.state === 1 ? 1 : W.state === 2 ? sstep(.4, 2.2, t - W.t0) : 0;
@@ -1015,7 +1018,7 @@ function draw(t){
   // warm point lights: windows, sconces, lamp
   const pl = [];
   WINS.forEach(W => { const g = WGLOW[W.d]; pl.push(W.cx, W.yb + W.h*.55, W.kind==='door'?1.2:.9, g * (W.kind==='door'?3.2:2.2)); });
-  pl.push(-1.6,2.35,.9, st.n*1.6, 1.6,2.35,.9, st.n*1.6, 8.6,4.9,5.0, st.n*6.0);
+  pl.push(-1.6,2.35,.9, st.n*1.6, 1.6,2.35,.9, st.n*1.6, 5.5,4.9,4.4, st.n*6.0);
   gl.uniform4fv(P.U.u_pl, new Float32Array(pl)); gl.uniform1i(P.U.u_npl, pl.length/4);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(P.U.u_sm, 0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.uniform1i(P.U.u_tags, 1);
@@ -1070,7 +1073,7 @@ function burst(p){
 function updateFW(dt){
   dt = Math.min(dt, .05);
   if (FW.on) { FW.next -= dt; if (FW.next <= 0) { const k = Math.random() < .22 ? Math.floor(rnd(2,5)) : 1; for (let i=0;i<k;i++) launch(); FW.next = rnd(.5, 1.6); } }
-  const born = [];
+  const born = [], ldt = dt; dt *= 1.8;   // physics runs ~1.8x real time: normal firework pace
   for (const q of FW.parts) {
     q.age += dt; const dr = Math.exp(-q.k*dt); for (let k=0;k<3;k++) q.v[k] *= dr; q.v[1] -= q.g*dt; for (let k=0;k<3;k++) q.p[k] += q.v[k]*dt;
     q.ht += dt; if (q.ht >= .045 || q.hn === 0) { q.ht = 0; q.hist[q.hi*3] = q.p[0]; q.hist[q.hi*3+1] = q.p[1]; q.hist[q.hi*3+2] = q.p[2]; q.hi = (q.hi+1)%HL; q.hn = Math.min(q.hn+1, HL); }
@@ -1078,7 +1081,7 @@ function updateFW(dt){
   }
   FW.parts = FW.parts.filter(q => q.age < q.life);
   born.forEach(burst);
-  const ld = Math.exp(-dt*1.4); FW.lights.forEach(l => l.i *= ld); FW.lights = FW.lights.filter(l => l.i > .02);
+  const ld = Math.exp(-ldt*1.6); FW.lights.forEach(l => l.i *= ld); FW.lights = FW.lights.filter(l => l.i > .02);
 }
 const GOLD_T = hex('#ffb35a');
 function drawFW(){
