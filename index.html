@@ -107,11 +107,14 @@ const FONT = 'B';    // 开窗后数字的字体：B = Playfair Display Italic�
 
 /* ================= basics ================= */
 const Q = new URLSearchParams(location.search);
-const PREVIEW = Q.has('preview');
-// 测试用：?now=2026-12-25T18:58 假装现在是那个时间（不影响她的真实进度）
-const FAKE_OFF = Q.has('now') && !isNaN(Date.parse(Q.get('now'))) ? Date.parse(Q.get('now')) - Date.now() : 0;
+// 测试暗号：只有带上 dev=暗号 时，preview / now 这些测试参数才会生效
+const DEV_KEY = 'mistletoe-k7q4';
+const DEV = Q.get('dev') === DEV_KEY;
+const PREVIEW = DEV && Q.has('preview');
+// 测试用：?dev=暗号&now=2026-12-25T18:58 假装现在是那个时间（不影响她的真实进度）
+const FAKE_OFF = DEV && Q.has('now') && !isNaN(Date.parse(Q.get('now'))) ? Date.parse(Q.get('now')) - Date.now() : 0;
 const now = () => new Date(Date.now() + FAKE_OFF);
-const HOUR_OVERRIDE = Q.has('hour') ? parseFloat(Q.get('hour')) : null;
+const HOUR_OVERRIDE = DEV && Q.has('hour') ? parseFloat(Q.get('hour')) : null;
 const dayDate = d => new Date(YEAR, 11, 24 + d);   // day 1 = 12/25
 const unlockAt = d => new Date(YEAR, 11, 24 + d, OPEN_HOUR);
 const NEWYEAR = new Date(YEAR + 1, 0, 1);
@@ -880,7 +883,7 @@ const FONTS = {
   H: {name:'Fraunces', css:'italic 300', g:'Fraunces:ital,wght@1,300'},
   I: {name:'Pinyon Script', css:'400', g:'Pinyon+Script', skew:true},
 };
-const NF = FONTS[(Q.get('font') || FONT).toUpperCase()] || FONTS.A;
+const NF = FONTS[((DEV && Q.get('font')) || FONT).toUpperCase()] || FONTS.A;
 (() => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = `https://fonts.googleapis.com/css2?family=${NF.g}&display=swap`; document.head.appendChild(l); })();
 function buildNumerals(){
   const c = document.createElement('canvas'); c.width = 7*128; c.height = 128; const x = c.getContext('2d');
