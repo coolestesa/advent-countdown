@@ -32,6 +32,17 @@ body{font-family:'Cormorant Garamond','Noto Serif TC',Georgia,serif;color:#fff;
 #status{position:fixed;z-index:9;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 3.6vh + clamp(56px,13.5vw,84px));
   font-family:'Noto Serif TC',serif;font-size:12px;letter-spacing:.08em;white-space:nowrap;padding:5px 14px;border-radius:999px;
   background:rgba(12,16,40,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(241,216,155,.35);color:#f8efd8}
+#gate{position:fixed;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;
+  background:rgba(4,6,16,.84);backdrop-filter:blur(7px) saturate(.6);-webkit-backdrop-filter:blur(7px) saturate(.6);transition:opacity 2.4s ease}
+#gate[hidden]{display:none}
+#gate.out{opacity:0;pointer-events:none}
+#gate h1{font-style:italic;font-weight:500;font-size:clamp(28px,8.4vw,52px);line-height:1.1;color:#f1d89b;white-space:nowrap}
+#gate .lead{font-family:'Noto Serif TC',serif;font-size:14px;letter-spacing:.12em;color:#d9dbe6;margin:14px 0 30px;opacity:.9}
+#gate .cd{display:flex;gap:clamp(14px,5vw,30px);align-items:flex-start}
+#gate .cd div{display:flex;flex-direction:column;align-items:center;min-width:2.2em}
+#gate .cd b{font-weight:500;font-size:clamp(34px,10vw,58px);line-height:1;color:#f8efd8;font-variant-numeric:tabular-nums}
+#gate .cd span{margin-top:8px;font-size:11px;letter-spacing:.32em;color:#a7abc0;padding-left:.32em}
+#gate .orn{width:46px;height:1px;background:linear-gradient(90deg,transparent,#d9bf82,transparent);margin:30px 0 0}
 #toast{position:fixed;z-index:10;left:50%;bottom:calc(env(safe-area-inset-bottom) + 3vh + 48px);transform:translate(-50%,10px);
   font-family:'Noto Serif TC',serif;font-size:13px;padding:8px 14px;border-radius:6px;background:#fbf6ea;color:#3a2e22;
   box-shadow:0 6px 18px rgba(0,0,30,.3);opacity:0;transition:.35s;pointer-events:none;white-space:nowrap}
@@ -67,6 +78,8 @@ body.has-preview #status{top:calc(env(safe-area-inset-top) + 52px + clamp(56px,1
 <div id="title"><div class="sub" id="clock">&nbsp;</div><h1>Chia's Countdown Calendar</h1></div>
 <div id="status" hidden></div>
 <div id="toast"></div>
+<div id="gate" hidden><h1>Chia's Countdown Calendar</h1><div class="lead">将在 12 月 25 日零点开启</div>
+  <div class="cd"><div><b id="g-d">0</b><span>DAYS</span></div><div><b id="g-h">00</b><span>HOURS</span></div><div><b id="g-m">00</b><span>MIN</span></div><div><b id="g-s">00</b><span>SEC</span></div></div><div class="orn"></div></div>
 <div id="preview"><span id="hlabel">--:--</span><input id="hslider" type="range" min="0" max="24" step="0.05"><button id="fwbtn">烟花</button><button id="reset">重置</button></div>
 <div id="modal"><div class="card" id="card"></div></div>
 <div id="nogl">这个页面需要较新的浏览器（支持 WebGL2）才能显示 3D 场景。</div>
@@ -90,7 +103,7 @@ const CONTENT = [
 const NEW_YEAR = { title: '新年快乐', text: '2027，\n我们也要一起。' };
 const YEAR = 2026;   // 12/25 所在的年份
 const OPEN_HOUR = 19;   // 每天几点开始可以开窗（19 = 晚上 7 点）
-const FONT = 'B';    // 开窗后数字的字体（A–J 花体）
+const FONT = 'B';    // 开窗后数字的字体：B = Playfair Display Italic（A–I 可选）
 
 /* ================= basics ================= */
 const Q = new URLSearchParams(location.search);
@@ -310,23 +323,25 @@ function buildHouse(G){
   });
   // dormers on the front slope (slope runs from z≈0.75 at y12.06 to z≈-1.35 at y14.9)
   [-3.6, 3.6].forEach(x => {
-    G.box(x-.85,12.06,-2.6,x-.62,14.0,0.15,C.trim,T); G.box(x+.62,12.06,-2.6,x+.85,14.0,0.15,C.trim,T); G.box(x-.62,13.86,-2.6,x+.62,14.0,0.15,C.trim,T); G.box(x-.62,12.06,-2.6,x+.62,12.22,0.15,C.trim,T);
-    G.prismZ(Array.from({length:13},(_,i)=>{const a=Math.PI*i/12; return [x+Math.cos(a)*1.0, 14.0+Math.sin(a)*0.55];}),-2.6,0.25,C.zinc,MAT(ZINC,1));
-    G.box(x-1.0,13.95,-2.6,x+1.0,14.05,0.25,C.trim,T);
-    G.box(x-.62,12.22,0.15,x-.5,13.86,0.3,C.trim,T); G.box(x+.5,12.22,0.15,x+.62,13.86,0.3,C.trim,T);
-    G.box(x-.62,13.76,0.15,x+.62,13.86,0.3,C.trim,T);
-    G.box(x-.5,12.35,-0.05,x+.5,13.76,0.05,C.glass,MAT(GLASS,0,9));
-    G.box(x-.66,12.22,0.15,x+.66,12.35,0.36,C.trim,T);
-    G.box(x-.03,12.35,0.05,x+.03,13.76,0.12,C.frame,MAT(PLAIN));
-    G.box(x-.5,13.02,0.05,x+.5,13.08,0.12,C.frame,MAT(PLAIN));
+    const Z = .62, F = MAT(PLAIN);
+    G.box(x-.85,12.06,-2.6,x-.62,14.0,Z+.15,C.trim,T); G.box(x+.62,12.06,-2.6,x+.85,14.0,Z+.15,C.trim,T); G.box(x-.62,13.86,-2.6,x+.62,14.0,Z+.13,C.trim,T); G.box(x-.62,12.06,-2.6,x+.62,12.22,Z+.13,C.trim,T);
+    G.prismZ(Array.from({length:13},(_,i)=>{const a=Math.PI*i/12; return [x+Math.cos(a)*1.0, 14.04+Math.sin(a)*0.55];}),-2.6,Z+.24,C.zinc,MAT(ZINC,1));
+    G.box(x-1.0,13.95,-2.6,x+1.0,14.05,Z+.29,C.trim,T);
+    G.box(x-.62,12.24,Z+.16,x-.5,13.84,Z+.31,C.trim,T); G.box(x+.5,12.24,Z+.16,x+.62,13.84,Z+.31,C.trim,T);
+    G.box(x-.5,13.75,Z+.16,x+.5,13.84,Z+.31,C.trim,T);
+    G.box(x-.5,12.35,Z-.05,x+.5,13.75,Z+.05,C.glass,MAT(GLASS,0,9));
+    G.box(x-.68,12.2,Z+.17,x+.68,12.35,Z+.38,C.trim,T);
+    G.box(x-.03,12.35,Z+.05,x+.03,13.75,Z+.12,C.frame,F);
+    G.box(x-.5,13.02,Z+.05,x+.5,13.08,Z+.12,C.frame,F);
   });
   // central oeil-de-boeuf with clock
-  G.box(-1.0,12.06,-2.6,1.0,14.1,0.18,C.trim,T);
-  G.prismZ(Array.from({length:15},(_,i)=>{const a=Math.PI*i/14; return [Math.cos(a)*1.15, 14.1+Math.sin(a)*0.7];}),-2.6,0.28,C.zinc,MAT(ZINC,1));
-  G.box(-1.15,14.05,-2.6,1.15,14.16,0.3,C.trim,T);
-  G.cyl(0,13.05,0.18,0.78,0.08,32,C.gold,MAT(GOLD),M4.chain(M4.T(0,13.05,0.18),M4.RX(Math.PI/2),M4.T(0,-13.05,-0.18)));
-  G.cyl(0,13.05,0.26,0.68,0.04,32,lin('#f7f1e4'),MAT(PLAIN),M4.chain(M4.T(0,13.05,0.26),M4.RX(Math.PI/2),M4.T(0,-13.05,-0.26)));
-  for (let i=0;i<12;i++){ const a=i/12*Math.PI*2; G.box(-.02,.5,-.01,.02,.6,.01,C.iron,MAT(PLAIN),M4.chain(M4.T(0,13.05,0.31),M4.RZ(-a))); }
+  G.box(-1.0,12.06,-2.6,1.0,14.25,0.8,C.trim,T);
+  G.box(-1.08,12.06,-2.6,1.08,12.2,0.86,C.trim,T);
+  G.prismZ(Array.from({length:15},(_,i)=>{const a=Math.PI*i/14; return [Math.cos(a)*1.15, 14.25+Math.sin(a)*0.7];}),-2.6,0.88,C.zinc,MAT(ZINC,1));
+  G.box(-1.15,14.2,-2.6,1.15,14.31,0.92,C.trim,T);
+  G.cyl(0,13.2,0.8,0.78,0.08,32,C.gold,MAT(GOLD),M4.chain(M4.T(0,13.2,0.8),M4.RX(Math.PI/2),M4.T(0,-13.2,-0.8)));
+  G.cyl(0,13.2,0.88,0.68,0.04,32,lin('#f7f1e4'),MAT(PLAIN),M4.chain(M4.T(0,13.2,0.88),M4.RX(Math.PI/2),M4.T(0,-13.2,-0.88)));
+  for (let i=0;i<12;i++){ const a=i/12*Math.PI*2; G.box(-.02,.5,-.01,.02,.6,.01,C.iron,MAT(PLAIN),M4.chain(M4.T(0,13.2,0.93),M4.RZ(-a))); }
 
   // ---- openings ----
   WINS.forEach(W => buildOpening(G, W));
@@ -345,7 +360,7 @@ function buildHouse(G){
   // a little apple (Chia = Apple)
   const appleR = (a) => { let best = 0; for (const cx of [-.1,.1]) { const dx = Math.cos(a), dy = Math.sin(a), b = -(dx*cx), c = cx*cx - .3*.3, disc = b*b - c; if (disc > 0) best = Math.max(best, -b + Math.sqrt(disc)); } return best; };
   const apple = [[0,6.12]]; for (let i=0;i<=48;i++){ const a = i/48*Math.PI*2; const r = appleR(a); apple.push([Math.cos(a)*r, 6.12 + Math.sin(a)*r*(Math.sin(a) < 0 ? 1.08 : .95)]); }
-  appleGeo(G, 0, 6.12, 0.24, .36);
+  appleGeo(G, 0, 6.15, 0.2, .4);
   // steps
   G.box(-1.6,0,0,1.6,0.16,0.9,C.plinth,S); G.box(-1.3,0.16,0,1.3,0.32,0.45,C.plinth,S);
   // sconces by the door
@@ -359,28 +374,30 @@ function buildHouse(G){
 }
 
 function appleGeo(G, cx, cy, cz, R){
-  // round apple with dimples top & bottom, slightly wider shoulders
+  // broad shoulders, tapering base, deep stem well, flatter depth; red with a warm yellow blush by the stem
   const P = (th, ph) => { const s = Math.sin(ph), c = Math.cos(ph);
-    const sh = 1 + .1*Math.max(c,0) - .06*Math.max(-c,0);
-    const dim = .3*Math.exp(-s*s*14) * Math.sign(c);
-    return [cx + R*s*Math.cos(th)*sh, cy + R*(c*.92 - dim), cz + R*.78*s*Math.sin(th)*sh]; };
-  const nu = 28, nv = 18, col = lin('#b3172a'), m = MAT(GOLD);
+    const sh = (1 + .13*c - .16*Math.max(-c,0)*Math.max(-c,0)) * (1 + .025*Math.cos(5*th)*Math.max(-c,0));
+    const dim = .42*Math.exp(-s*s*9)*Math.max(c,0) - .12*Math.exp(-s*s*12)*Math.max(-c,0);
+    return [cx + R*s*Math.cos(th)*sh*1.02, cy + R*(c*.95 - dim), cz + R*.5*s*Math.sin(th)*sh]; };
+  const nu = 32, nv = 20, red = lin('#c8303a'), red2 = lin('#a8202c'), yel = lin('#e8b04a'), m = MAT(19);
   const nrm = (th, ph) => { const e = 1e-3, p = P(th,ph), a = P(th+e,ph), b = P(th,ph+e);
     const u = [a[0]-p[0],a[1]-p[1],a[2]-p[2]], v = [b[0]-p[0],b[1]-p[1],b[2]-p[2]];
-    let n = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]]; const l = Math.hypot(...n) || 1; n = n.map(q => -q/l);
-    const o = [p[0]-cx, p[1]-cy, p[2]-cz]; if (n[0]*o[0]+n[1]*o[1]+n[2]*o[2] < 0) n = n.map(q => -q); return n; };
+    let n = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]]; const l = Math.hypot(...n) || 1; n = n.map(q => q/l);
+    const o = [p[0]-cx, p[1]-cy+R*.1, p[2]-cz]; if (n[0]*o[0]+n[1]*o[1]+n[2]*o[2] < 0) n = n.map(q => -q); return n; };
+  const col = (th, ph) => { const k = Math.exp(-ph*ph*5)*.85, side = .5+.5*Math.cos(th+.6); return mixA(mixA(red2, red, side), yel, k); };
   for (let i=0;i<nu;i++) for (let j=0;j<nv;j++){
     const t0 = i/nu*Math.PI*2, t1 = (i+1)/nu*Math.PI*2, p0 = .02+j/nv*(Math.PI-.04), p1 = .02+(j+1)/nv*(Math.PI-.04);
-    const A = [t0,p0], B = [t1,p0], Cc = [t1,p1], D = [t0,p1];
-    for (const tri of [[A,B,Cc],[A,Cc,D]]) for (const q of tri) G.v(P(q[0],q[1]), nrm(q[0],q[1]), col, m, [0,0]);
+    for (const tri of [[[t0,p0],[t1,p0],[t1,p1]],[[t0,p0],[t1,p1],[t0,p1]]]) for (const q of tri) G.v(P(q[0],q[1]), nrm(q[0],q[1]), col(q[0],q[1]), m, [0,0]);
   }
-  // stem
-  G.cyl(0,0,0,.03,.24,8,lin('#5a3a1e'),MAT(PLAIN),M4.chain(M4.T(cx+.01,cy+R*.72,cz),M4.RZ(-.3)),true,.022);
-  // gold leaf: two curved halves folded along the midrib
-  const leaf = M4.chain(M4.T(cx+.05,cy+R*.95,cz+.02), M4.RZ(.5));
+  // stem: dark, curved, with a green tip
+  const top = cy + R*(.95-.42) - .02;
+  G.cyl(0,0,0,.034,.3,8,lin('#2a1c14'),MAT(PLAIN),M4.chain(M4.T(cx+.01,top,cz+.06),M4.RZ(-.3)),true,.026);
+  G.cyl(0,0,0,.03,.06,8,lin('#7fae4a'),MAT(PLAIN),M4.chain(M4.T(cx+.01,top,cz+.06),M4.RZ(-.3),M4.T(0,.29,0)),true,.026);
+  // small gold leaf
+  const leaf = M4.chain(M4.T(cx+.05,top+.14,cz+.12), M4.RZ(.35));
   const L = 7;
   for (const sd of [-1,1]) for (let k=0;k<L;k++){
-    const f = (t, w) => { const x = .02 + t*.26, half = Math.sin(Math.PI*t)*.07*w; return [x, sd*half, Math.abs(half)*.9 - .02*Math.sin(Math.PI*t)]; };
+    const f = (t, w) => { const x = .02 + t*.3, half = Math.sin(Math.PI*Math.pow(t,.8))*.085*w; return [x, sd*half, Math.abs(half)*.7 - .025*Math.sin(Math.PI*t)]; };
     const a0 = f(k/L,0), a1 = f((k+1)/L,0), b0 = f(k/L,1), b1 = f((k+1)/L,1);
     const nn = [0, -sd*.35, 1];
     G.quad(M4.xf(leaf,a0),M4.xf(leaf,a1),M4.xf(leaf,b1),M4.xf(leaf,b0),G.N(leaf,nn),C.gold,MAT(GOLD));
@@ -491,17 +508,53 @@ function leafGeo(lw, lh, door){
   }
   return G;
 }
+// a thin ribbon band (with thickness) swept along a path; pf(u) -> {p, w} with w = half-width vector
+function band(G, n, pf, col, m, th = .014, notch = 0){
+  const R = [];
+  for (let i=0;i<=n;i++){ const u = i/n, {p, w} = pf(u), q = pf(Math.min(1, u+.01)), q0 = pf(Math.max(0, u-.01));
+    const t = [q.p[0]-q0.p[0], q.p[1]-q0.p[1], q.p[2]-q0.p[2]];
+    let nn = [t[1]*w[2]-t[2]*w[1], t[2]*w[0]-t[0]*w[2], t[0]*w[1]-t[1]*w[0]]; const l = Math.hypot(...nn) || 1; nn = nn.map(v => v/l);
+    const tl = Math.hypot(...t) || 1; R.push({p, w, n: nn, t: t.map(v => v/tl)}); }
+  const add = (a,b,k=1) => [a[0]+b[0]*k, a[1]+b[1]*k, a[2]+b[2]*k];
+  for (const side of [1,-1]){
+    const off = th/2*side, V = (P, N) => G.v(P, N.map(v => v*side), col, m, [0,0]);
+    for (let i=0;i<n;i++){
+      const A = R[i], B = R[i+1];
+      const a0 = add(add(A.p,A.w,-1),A.n,off), a1 = add(add(A.p,A.w,1),A.n,off), ac = add(A.p,A.n,off);
+      let b0 = add(add(B.p,B.w,-1),B.n,off), b1 = add(add(B.p,B.w,1),B.n,off), bc = add(B.p,B.n,off);
+      if (notch && i === n-1) bc = add(bc, B.t, -notch);
+      const quad = (p0,p1,p2,p3,n0,n1) => { V(p0,n0); V(p1,n0); V(p2,n1); V(p0,n0); V(p2,n1); V(p3,n1); };
+      if (side > 0) { quad(a0,ac,bc,b0,A.n,B.n); quad(ac,a1,b1,bc,A.n,B.n); }
+      else { quad(a0,b0,bc,ac,A.n,B.n); quad(ac,bc,b1,a1,A.n,B.n); }
+    }
+  }
+}
 function ribbonGeo(W){
   const G = new Geo(), V = MAT(VELVET), {w,h,arch} = W, by = W.kind === 'door' ? .5 : .52;
   const cy = W.yb + h*by, zf = .02;
   G.box(-.075,W.yb-cy,zf,.075,W.yb+h-cy,zf+.03,C.rib,V);
   G.box(-w/2-.03,-.075,zf,w/2+.03,.075,zf+.03,C.rib,V);
-  const s = W.kind === 'door' ? 1.9 : 1.55;
-  for (const sgn of [-1,1]){
-    G.torus(.15*s,.05*s,14,7,C.rib,V,M4.chain(M4.T(sgn*.15*s,.02,.1),M4.RZ(sgn*.25),M4.S(1,.62,.55)));
-    G.box(-.045*s,-.36*s,.06,.045*s,0,.1,C.rib,V,M4.chain(M4.T(sgn*.03,-.02,0),M4.RZ(sgn*.32)));
+  const s = W.kind === 'door' ? 1.75 : 1.45, z0 = .13;
+  const sm = (a,b,x) => { const t = Math.max(0, Math.min(1, (x-a)/(b-a))); return t*t*(3-2*t); };
+  for (const sg of [-1,1]){
+    // one big, soft, puffy loop per side: pinched only at the knot, broad and rounded at the end
+    band(G, 32, u => { const ph = u*Math.PI*2, e = (1-Math.cos(ph))/2;
+      const x = sg*(.06 + .36*Math.pow(e,.7))*s, y = (.07*e + .025*Math.sin(ph))*s, z = z0 + .15*s*Math.sin(ph)*(.55+.45*e);
+      const hw = (.045 + .13*sm(0,.45,e) - .03*sm(.85,1,e))*s;
+      return {p:[x,y,z], w:[sg*hw*.12, hw, -hw*.18*Math.cos(ph)]}; }, C.rib, V, .02*s);
+    // a soft fold inside the loop for depth
+    band(G, 20, u => { const ph = u*Math.PI*2, e = (1-Math.cos(ph))/2;
+      const x = sg*(.05 + .26*Math.pow(e,.75))*s, y = (.045*e)*s, z = z0 - .02 + .08*s*Math.sin(ph);
+      const hw = (.035 + .07*sm(0,.5,e))*s;
+      return {p:[x,y,z], w:[0, hw, 0]}; }, lin('#7e1424'), V, .016*s);
+    // broad tails falling outward, gently waving, with a V-cut end
+    band(G, 18, u => { const x = sg*(.04+.24*u)*s, y = -(.06+.5*u)*s, z = z0 + .02 + .045*s*Math.sin(u*Math.PI*1.3);
+      const tw = .35*Math.sin(u*Math.PI*1.2)*sg, hw = (.07 + .035*u)*s, dir = [.5, sg*.24];
+      const pl = Math.hypot(...dir);
+      return {p:[x,y,z], w:[dir[0]/pl*hw*Math.cos(tw), dir[1]/pl*hw*Math.cos(tw), hw*Math.sin(tw)]}; }, C.rib, V, .018*s, .06*s);
   }
-  G.sphere(0,0,.1,.065*s,.075*s,.06*s,C.rib,V);
+  // the knot
+  G.sphere(0,.005*s,z0+.03,.075*s,.095*s,.07*s,C.rib,V,null,14,10);
   return {G, cy};
 }
 
@@ -597,10 +650,9 @@ function buildWorld(){
       G.quad(a,b,c,dd,n,col,MAT(MOUNT));
     }
   };
-  ridge(-560,420,100,235,11,lin('#7f9c92'));
-  ridge(-800,400,260,190,12,lin('#86a39a'), -160, 420);   // behind the house, left
-  ridge(-1250,500,470,260,13,lin('#9cb1c0'), 190, 560);  // farthest, behind 101
-  ridge(-1150,600,150,200,14,lin('#9db3b0'));
+  ridge(-560,420,110,250,11,lin('#46705a'));
+  ridge(-900,560,190,320,12,lin('#3f6556'));
+  ridge(-1350,700,280,380,13,lin('#3e5b55'));
   return G;
 }
 
@@ -640,7 +692,7 @@ in vec3 v_wp; in vec3 v_n; in vec3 v_col; in vec4 v_mat; in vec2 v_uv; in vec4 v
 uniform vec3 u_cam, u_L, u_Lcol, u_ambS, u_ambG; uniform float u_n, u_t, u_exp, u_fogD;
 uniform sampler2DShadow u_sm; uniform sampler2D u_tags;
 uniform float u_wg[10]; uniform vec4 u_pl[14]; uniform int u_npl;
-uniform float u_digit, u_numA; uniform vec4 u_fl[4]; uniform vec3 u_flc[4];
+uniform float u_digit, u_numA; uniform vec4 u_fl[4]; uniform vec3 u_flc[4]; uniform vec4 u_fb[4];
 out vec4 o;
 ${COMMON}
 float shadowF(vec3 N){
@@ -685,7 +737,8 @@ void main(){
     E+=v_col*v_mat.w*0.; }
   else if(id==11){ alb*=.7+.45*fbm3(wp.xz*.01+wp.y*.004); }
   else if(id==12){ float rim=pow(1.-max(dot(N,V),0.),2.); alb*=.75+.9*rim; spec=.2; shin=10.; }
-  else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA*.92; E=mix(vec3(.03,.015,.005),vec3(1.,.66,.2)*(.95+u_n*.4)*mix(.7,1.15,v_uv.y),t.r); }
+  else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA; E=vec3(.006,.095,.03)*(1.3+u_n*.4); }
+  else if(id==19){ alb*=.94+.1*noise(wp.xy*14.); float sp=step(.955,hash(floor(wp.xy*70.))); alb=mix(alb,alb*vec3(1.35,1.2,1.1)+.02,sp*.7); float dk=step(.97,hash(floor(wp.xy*55.)+3.)); alb*=1.-.35*dk; spec=.1; shin=14.; }
   else if(id==14){ lit=false; E=alb*(.6+u_n*3.2)*(v_mat.w>.5?.45:1.); }
   else if(id==16){ lit=false; E=alb*u_n*(1.8+1.4*sin(u_t*2.5+hash(wp.xy*3.1)*30.)); }
   if(snowy>.5){ float sn=smoothstep(.62,.86,N.y+(noise(wp.xz*5.+wp.y)-.5)*.3); alb=mix(alb,vec3(.9,.92,.97),sn); spec=mix(spec,.2,sn); shin=mix(shin,40.,sn); }
@@ -701,10 +754,11 @@ void main(){
     vec3 fl=vec3(0.);
     for(int i=0;i<4;i++){ vec3 d=u_fl[i].xyz-wp; float dd=dot(d,d); fl+=u_flc[i]*u_fl[i].w*max(dot(N,d*inversesqrt(dd)),0.)/(1.+dd/12.); }
     fl*=smoothstep(6.5,10.5,wp.y)*step(abs(wp.z),15.);
+    if(id==11){ for(int i=0;i<4;i++){ vec3 d=u_fb[i].xyz-wp; float dd=dot(d,d); fl+=u_flc[i]*u_fb[i].w*max(dot(N,d*inversesqrt(dd)),0.)/(1.+dd/250000.)*2.4; } }
     c+=alb*(amb*ao+u_Lcol*nl*sh+pl+fl)+u_Lcol*spec*pow(max(dot(N,H),0.),shin)*sh*nl;
   }
   float dist=length(wp-u_cam);
-  float f=(1.-exp(-dist*u_fogD))*(id==11?.62:1.);
+  float f=1.-exp(-dist*u_fogD);
   c=mix(c,skyBase(-V)*1.02,f);
   o=vec4(outCol(c*u_exp),outA);
 }`;
@@ -816,16 +870,15 @@ gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE); gl.bindFramebuffer(gl.FRAMEBU
 // calligraphic numerals shown on opened windows
 const tagTex = gl.createTexture();
 const FONTS = {
-  A: {name:'Great Vibes', css:'400', g:'Great+Vibes'},
-  B: {name:'Pinyon Script', css:'400', g:'Pinyon+Script'},
-  C: {name:'Parisienne', css:'400', g:'Parisienne'},
-  D: {name:'Alex Brush', css:'400', g:'Alex+Brush'},
-  E: {name:'Dancing Script', css:'700', g:'Dancing+Script:wght@700'},
-  F: {name:'Playball', css:'400', g:'Playball'},
-  G: {name:'Yesteryear', css:'400', g:'Yesteryear'},
-  H: {name:'Pacifico', css:'400', g:'Pacifico'},
-  I: {name:'Tangerine', css:'700', g:'Tangerine:wght@700'},
-  J: {name:'Rouge Script', css:'400', g:'Rouge+Script'},
+  A: {name:'Cormorant Garamond', css:'italic 500', g:'Cormorant+Garamond:ital,wght@1,500'},
+  B: {name:'Playfair Display', css:'italic 400', g:'Playfair+Display:ital,wght@1,400'},
+  C: {name:'Bodoni Moda', css:'italic 400', g:'Bodoni+Moda:ital,wght@1,400'},
+  D: {name:'EB Garamond', css:'italic 400', g:'EB+Garamond:ital,wght@1,400'},
+  E: {name:'Libre Caslon Text', css:'italic 400', g:'Libre+Caslon+Text:ital@1'},
+  F: {name:'Instrument Serif', css:'italic 400', g:'Instrument+Serif:ital@1'},
+  G: {name:'DM Serif Display', css:'italic 400', g:'DM+Serif+Display:ital@1'},
+  H: {name:'Fraunces', css:'italic 300', g:'Fraunces:ital,wght@1,300'},
+  I: {name:'Pinyon Script', css:'400', g:'Pinyon+Script', skew:true},
 };
 const NF = FONTS[(Q.get('font') || FONT).toUpperCase()] || FONTS.A;
 (() => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = `https://fonts.googleapis.com/css2?family=${NF.g}&display=swap`; document.head.appendChild(l); })();
@@ -833,8 +886,7 @@ function buildNumerals(){
   const c = document.createElement('canvas'); c.width = 7*128; c.height = 128; const x = c.getContext('2d');
   x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.lineJoin = 'round';
   x.font = `${NF.css} 104px "${NF.name}", "Bodoni 72", Didot, Georgia, serif`;
-  for (let i=0;i<7;i++){ x.setTransform(1,0,-.24,1,i*128+64-10,102); x.shadowColor = 'rgba(0,0,0,.85)'; x.shadowBlur = 7; x.shadowOffsetX = 2; x.shadowOffsetY = 3; x.fillStyle = x.strokeStyle = '#000'; x.lineWidth = 3.2; x.strokeText(String(i+1), 0, 0); x.fillText(String(i+1), 0, 0);
-    x.shadowColor = 'transparent'; x.fillStyle = x.strokeStyle = '#fff'; x.strokeText(String(i+1), 0, 0); x.fillText(String(i+1), 0, 0); }
+  for (let i=0;i<7;i++){ x.setTransform(1,0,NF.skew ? -.22 : 0,1,i*128+64-(NF.skew ? 9 : 0),102); x.fillStyle = '#fff'; x.fillText(String(i+1), 0, 0); }
   x.setTransform(1,0,0,1,0,0);
   gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c); gl.generateMipmap(gl.TEXTURE_2D);
@@ -862,8 +914,9 @@ WINS.forEach(W => {
 const WHEEL_AT = M4.chain(M4.T(-34,26,-170), M4.RY(.35));
 const wheel = upload((() => { const G = new Geo(), wc = lin('#c9ced6');
   G.torus(22,.5,48,6,wc,MAT(PLAIN),M4.id()); G.torus(20.5,.25,48,4,wc,MAT(PLAIN),M4.id());
-  for (let i=0;i<24;i++){ const a=i/24*Math.PI*2; G.box(-.1,0,-.1,.1,21,.1,wc,MAT(PLAIN),M4.RZ(a)); G.box(-1,-1.2,-1,1,1.2,1,lin(['#e46a6a','#e8c36a','#7cc0a0','#7aa6e0'][i%4]),MAT(PLAIN),M4.T(Math.cos(a)*22,Math.sin(a)*22,0)); G.sphere(Math.cos(a)*22.6,Math.sin(a)*22.6,0,.5,.5,.5,lin(['#ff8a8a','#ffe08a','#9affd0','#9ac8ff'][i%4]),MAT(FAIRY),null,5,4); }
+  for (let i=0;i<24;i++){ const a=i/24*Math.PI*2; G.box(-.1,0,-.1,.1,21,.1,wc,MAT(PLAIN),M4.RZ(a)); G.sphere(Math.cos(a)*22.6,Math.sin(a)*22.6,0,.5,.5,.5,lin(['#ff8a8a','#ffe08a','#9affd0','#9ac8ff'][i%4]),MAT(FAIRY),null,5,4); }
   return G; })());
+const cabins = ['#e46a6a','#e8c36a','#7cc0a0','#7aa6e0'].map(c => { const G = new Geo(); G.box(-.08,-.1,-.08,.08,1.6,.08,lin('#c9ced6'),MAT(PLAIN)); G.box(-1,-1.2,-1,1,1.2,1,lin(c),MAT(PLAIN)); G.box(-1.1,1.2,-1.1,1.1,1.45,1.1,lin(c),MAT(PLAIN)); return upload(G); });
 const hands = [0.42, 0.6].map((len,i) => { const g = new Geo(); g.box(-.025-.01*i,-.05,0,.025+.01*i,len,.03,C.iron,MAT(IRON)); return upload(g); });
 
 /* ================= time of day ================= */
@@ -929,7 +982,7 @@ function camera(t){
   const asp = W_/H_, fy = 42*Math.PI/180, tv = Math.tan(fy/2);
   const dW = 8.2/(tv*asp), dH = 9.4/tv;
   const dist = clamp(Math.max(dW, dH)*.95, 25, 60);
-  const sway = .18*Math.sin(t*.07);
+  const sway = 0;
   CAM = [sway, 3.0, dist];
   const tgt = [0, 11.6 + (dist-40)*.02, 0];
   const V = M4.look(CAM, tgt, [0,1,0]), P = M4.persp(fy, asp, 2, 4000);
@@ -1020,7 +1073,7 @@ function updateDyn(t){
     W.R.mesh.model = M4.mul(M4.T(shx,0,0), leafModel(W.R, W, ang));
     // ribbon: slips down, tumbles and vanishes
     const c = W.rib.c, ready = W.state === 0 && (W.kind === 'door' ? isNewYear() : canOpen());
-    const pulse = ready ? 1 + .05*Math.sin(t*3.2) : 1;
+    const pulse = ready ? 1 + .02*Math.sin(t*2.6) : 1;
     const fall = rp*rp, sc = Math.max(1e-3, (1 - sstep(.55, 1, rp)) * pulse);
     W.rib.mesh.model = M4.chain(M4.T(c[0]+shx, c[1] - fall*2.2, c[2] + rp*.5), M4.RZ(rp*1.1), M4.RX(-rp*.8), M4.S(sc,sc,sc));
     if (W.num) { const a = W.state ? 1 : 0, ss = 2.05;
@@ -1071,7 +1124,7 @@ function draw(t){
   const aI = st.aI; gl.uniform3fv(P.U.u_ambS, st.aS.map(v=>v*aI)); gl.uniform3fv(P.U.u_ambG, st.aG.map(v=>v*aI));
   gl.uniform1f(P.U.u_n,st.n); gl.uniform1f(P.U.u_t,t); gl.uniform1f(P.U.u_exp,st.ex); gl.uniform1f(P.U.u_fogD, .0008);
   gl.uniform1fv(P.U.u_wg, WGLOW);
-  { const L4 = new Float32Array(16), C4 = new Float32Array(12); FW.lights.slice(0,4).forEach((l,i) => { L4.set([l.x,l.y,l.z,l.i],i*4); C4.set(l.c,i*3); }); gl.uniform4fv(P.U.u_fl, L4); gl.uniform3fv(P.U.u_flc, C4); }
+  { const L4 = new Float32Array(16), B4 = new Float32Array(16), C4 = new Float32Array(12); FW.lights.slice(0,4).forEach((l,i) => { L4.set([l.x,l.y,l.z,l.i],i*4); B4.set([l.bx,l.by,l.bz,l.i],i*4); C4.set(l.c,i*3); }); gl.uniform4fv(P.U.u_fl, L4); gl.uniform4fv(P.U.u_fb, B4); gl.uniform3fv(P.U.u_flc, C4); }
   // warm point lights: windows, sconces, lamp
   const pl = [];
   WINS.forEach(W => { const g = WGLOW[W.d]; pl.push(W.cx, W.yb + W.h*.55, W.kind==='door'?1.2:.9, g * (W.kind==='door'?3.2:2.2)); });
@@ -1080,10 +1133,12 @@ function draw(t){
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(P.U.u_sm, 0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.uniform1i(P.U.u_tags, 1);
   for (const m of [world, ...dyn]) { gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
-  wheel.model = M4.chain(WHEEL_AT, M4.RZ(-t*.045)); gl.uniformMatrix4fv(P.U.u_model,false,wheel.model); gl.bindVertexArray(wheel.vao); gl.drawArrays(gl.TRIANGLES,0,wheel.count);
+  const wa = -t*.045;
+  wheel.model = M4.chain(WHEEL_AT, M4.RZ(wa)); gl.uniformMatrix4fv(P.U.u_model,false,wheel.model); gl.bindVertexArray(wheel.vao); gl.drawArrays(gl.TRIANGLES,0,wheel.count);
+  for (let i=0;i<24;i++){ const a = i/24*Math.PI*2 + wa, m = cabins[i%4]; gl.uniformMatrix4fv(P.U.u_model,false,M4.chain(WHEEL_AT, M4.T(Math.cos(a)*22, Math.sin(a)*22-1.5, 0))); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
   // clock hands keep the time shown in the sky
   const hh = ((E.h%12)+12)%12, mm = (E.h%1)*60;
-  [hh/12, mm/60].forEach((f,i) => { const m = hands[i]; m.model = M4.chain(M4.T(0,13.05,0.3), M4.RZ(-f*Math.PI*2)); gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); });
+  [hh/12, mm/60].forEach((f,i) => { const m = hands[i]; m.model = M4.chain(M4.T(0,13.2,0.94), M4.RZ(-f*Math.PI*2)); gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); });
   // gold calligraphic numerals on opened windows
   gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
   WINS.forEach(W => { if (!W.num || opened[W.d] == null || !(W.numA > 0)) return;
@@ -1125,7 +1180,7 @@ function burst(p){
     if (FW.parts.length < MAXPART) FW.parts.push(mkPart(p, d.map(q=>q*s), c1, rnd(3.4,4.4), 1.85, 6.2));
     if (core && i%3===0 && FW.parts.length < MAXPART) FW.parts.push(mkPart(p, d.map(q=>q*s*.45), c2, rnd(2.2,2.8), 1.85, 6.2));
   }
-  FW.lights.unshift({x: clamp(p[0]*.13, -7, 7), y: 16.5, z: 5.5, c: c1, i: 2.4});
+  FW.lights.unshift({x: clamp(p[0]*.13, -7, 7), y: 16.5, z: 5.5, c: c1, i: 2.4, bx: p[0], by: p[1], bz: p[2]});
   if (FW.lights.length > 4) FW.lights.length = 4;
 }
 function updateFW(dt){
@@ -1197,6 +1252,18 @@ const t0 = performance.now();
 const MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'], WK = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 let SHOW_H = null, lastT = 0, lastClock = '', lastDay = null;
 const clockEl = document.getElementById('clock');
+const gate = document.getElementById('gate'); let gateTxt = '', gateOn = !PREVIEW && now() < dayDate(1);
+if (gateOn) gate.hidden = false;
+function updateGate(){
+  if (!gateOn) return;
+  const ms = dayDate(1) - now();
+  if (ms <= 0) { gateOn = false; gate.classList.add('out'); setTimeout(() => gate.hidden = true, 2600); return; }
+  const sec = Math.floor(ms/1000), d = Math.floor(sec/86400), h = Math.floor(sec%86400/3600), m = Math.floor(sec%3600/60), ss = sec%60;
+  const txt = [d,h,m,ss].join(); if (txt === gateTxt) return; gateTxt = txt;
+  const P2 = v => String(v).padStart(2,'0');
+  document.getElementById('g-d').textContent = d; document.getElementById('g-h').textContent = P2(h);
+  document.getElementById('g-m').textContent = P2(m); document.getElementById('g-s').textContent = P2(ss);
+}
 function updateClock(){
   const d = now(); let hh = d.getHours(), mm = d.getMinutes(), ss = d.getSeconds();
   if (SHOW_H != null) { const m = Math.floor(SHOW_H*60) % 1440; hh = Math.floor(m/60); mm = m % 60; }
@@ -1212,7 +1279,7 @@ function loop(){
   if (ny && !FW.on) updateStatus();
   FW.on = ny;
   if (ny) { const D = WINS.find(W => W.kind === 'door'); if (D.state === 0 && opened[D.d] == null) openSlot(D, DOOR, 3000); }
-  updateFW(dt); updateClock();
+  updateFW(dt); updateClock(); updateGate();
   draw(t); drawSnow();
   requestAnimationFrame(loop);
 }
