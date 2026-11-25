@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -78,11 +78,11 @@ body.has-preview #status{top:calc(env(safe-area-inset-top) + 52px + clamp(56px,1
 <div id="title"><div class="sub" id="clock">&nbsp;</div><h1>Chia's Countdown Calendar</h1></div>
 <div id="status" hidden></div>
 <div id="toast"></div>
-<div id="gate" hidden><h1>Chia's Countdown Calendar</h1><div class="lead">将在 12 月 25 日零点开启</div>
+<div id="gate" hidden><h1>Chia's Countdown Calendar</h1><div class="lead">將在 12 月 25 日午夜 12 點開啟</div>
   <div class="cd"><div><b id="g-d">0</b><span>DAYS</span></div><div><b id="g-h">00</b><span>HOURS</span></div><div><b id="g-m">00</b><span>MIN</span></div><div><b id="g-s">00</b><span>SEC</span></div></div><div class="orn"></div></div>
-<div id="preview"><span id="hlabel">--:--</span><input id="hslider" type="range" min="0" max="24" step="0.05"><button id="fwbtn">烟花</button><button id="reset">重置</button></div>
+<div id="preview"><span id="hlabel">--:--</span><input id="hslider" type="range" min="0" max="24" step="0.05"><button id="fwbtn">煙火</button><button id="reset">重置</button></div>
 <div id="modal"><div class="card" id="card"></div></div>
-<div id="nogl">这个页面需要较新的浏览器（支持 WebGL2）才能显示 3D 场景。</div>
+<div id="nogl">這個頁面需要較新的瀏覽器（支援 WebGL2）才能顯示 3D 場景。</div>
 
 <script>
 /* =========================================================
@@ -91,16 +91,16 @@ body.has-preview #status{top:calc(env(safe-area-inset-top) + 52px + clamp(56px,1
    img 可以放图片网址或同仓库里的文件名，例如 'photo1.jpg'
    ========================================================= */
 const CONTENT = [
-  { title: '圣诞快乐',   text: '第一份礼物。\n愿你今天被很多很多温柔包围。' },
-  { title: '一杯热可可', text: '今天允许自己什么都不做，\n只是窝着。' },
-  { title: '一首歌',     text: '（在这里放一首想让 TA 听的歌）' },
-  { title: '一段回忆',   text: '（写一件你们一起经历过、\n想起来就会笑的事）' },
-  { title: '一个小任务', text: '出门走一圈，\n拍一张今天的天空发给我。' },
-  { title: '一张照片',   text: '（在这里放一张照片）' },
-  { title: '跨年前夜',   text: '今年辛苦啦。\n谢谢你出现在这一年里。' },
+  { title: '聖誕快樂',   text: '第一份禮物。\n願妳今天被很多很多溫柔包圍。' },
+  { title: '一杯熱可可', text: '今天允許自己什麼都不做，\n只是窩著。' },
+  { title: '一首歌',     text: '（在這裡放一首想讓 TA 聽的歌）' },
+  { title: '一段回憶',   text: '（寫一件你們一起經歷過、\n想起來就會笑的事）' },
+  { title: '一個小任務', text: '出門走一圈，\n拍一張今天的天空傳給我。' },
+  { title: '一張照片',   text: '（在這裡放一張照片）' },
+  { title: '跨年前夜',   text: '今年辛苦啦。\n謝謝妳出現在這一年裡。' },
 ];
 // 新年零点：大门自动打开、开始放烟花时的那张卡片
-const NEW_YEAR = { title: '新年快乐', text: '2027，\n我们也要一起。' };
+const NEW_YEAR = { title: '新年快樂', text: '2027，\n我們也要一起。' };
 const YEAR = 2026;   // 12/25 所在的年份
 const OPEN_HOUR = 19;   // 每天几点开始可以开窗（19 = 晚上 7 点）
 const FONT = 'B';    // 开窗后数字的字体：B = Playfair Display Italic（A–I 可选）
@@ -1079,7 +1079,7 @@ canvas.addEventListener('click', e => {
   if (opened[W.d] != null) return showCard(W.d, 0);
   if (W.kind === 'door') {
     if (isNewYear()) return openSlot(W, DOOR, 3800);
-    W.shake = NOW; return toast('这扇大门会在新年零点打开');
+    W.shake = NOW; return toast('這扇大門會在跨年午夜打開');
   }
   if (!canOpen()) { W.shake = NOW; return toast(lockedMsg()); }
   openSlot(W, W.n, 3800);
@@ -1096,22 +1096,22 @@ function showCard(slot, delay){
 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('on'); });
 function lockedMsg(){
   const nw = now(), av = availCount();
-  if (av >= DAYS) return '七份礼物都拆完啦，新年零点看看天空 ✦';
+  if (av >= DAYS) return '七份禮物都拆完啦，跨年午夜記得看看天空 ✦';
   const next = unlockAt(av + 1), ms = next - nw;
   const sameDay = next.toDateString() === nw.toDateString();
-  if (av === 0 && !sameDay) return `12月25日晚上7点开第一扇窗哦 · 还有 ${Math.ceil(ms/864e5)} 天`;
-  if (sameDay) { const h = Math.floor(ms/36e5), m = Math.ceil(ms%36e5/6e4); return `今晚 7 点才能开窗哦 · 还有 ${h ? h+' 小时 ' : ''}${m} 分钟`; }
-  return '今天的礼物拆过啦，明晚 7 点再来 ✦';
+  if (av === 0 && !sameDay) return `12月25日晚上7點開第一扇窗喔 · 還有 ${Math.ceil(ms/864e5)} 天`;
+  if (sameDay) { const h = Math.floor(ms/36e5), m = Math.ceil(ms%36e5/6e4); return `今晚 7 點才能開窗喔 · 還有 ${h ? h+' 小時 ' : ''}${m} 分鐘`; }
+  return '今天的禮物拆過啦，明晚 7 點再來 ✦';
 }
 let lastAvail = availCount();
-function checkUnlock(){ const av = availCount(); if (av > lastAvail && canOpen()) toast('7 点到啦，可以挑一扇窗打开了 ✦'); lastAvail = av; }
+function checkUnlock(){ const av = availCount(); if (av > lastAvail && canOpen()) toast('7 點到啦，可以挑一扇窗打開了 ✦'); lastAvail = av; }
 function updateStatus(){
   const el = document.getElementById('status'), av = availCount(), used = usedCount();
   if (isNewYear()) el.textContent = 'Happy New Year ✦';
-  else if (av === 0) el.textContent = `第一份礼物 12月25日 打开 · 还有 ${Math.ceil((dayDate(1) - now())/864e5)} 天`;
-  else if (used < av) el.textContent = av - used > 1 ? `今天可以挑 ${av-used} 扇窗打开 ✦` : '今天可以挑一扇窗打开 ✦';
-  else if (av < DAYS) el.textContent = '明天零点再来拆下一份 ✦';
-  else el.textContent = '新年零点，记得看看天空 ✦';
+  else if (av === 0) el.textContent = `第一份禮物 12月25日 打開 · 還有 ${Math.ceil((dayDate(1) - now())/864e5)} 天`;
+  else if (used < av) el.textContent = av - used > 1 ? `今天可以挑 ${av-used} 扇窗打開 ✦` : '今天可以挑一扇窗打開 ✦';
+  else if (av < DAYS) el.textContent = '明晚 7 點再來拆下一份 ✦';
+  else el.textContent = '跨年午夜，記得看看天空 ✦';
 }
 
 /* ================= render ================= */
