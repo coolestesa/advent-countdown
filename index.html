@@ -536,40 +536,51 @@ function band(G, n, pf, col, m, th = .014, notch = 0, bulge = .2){
   }
 }
 function ribbonGeo(W, k = 0){
-  const G = new Geo(), V = MAT(VELVET), {w,h,arch} = W, by = W.kind === 'door' ? .5 : .52;
+  const G = new Geo(), V = MAT(VELVET), {w,h} = W, by = W.kind === 'door' ? .5 : .52;
   const cy = W.yb + h*by, zf = .02;
-  // untie (k: 0 tied → 1 undone): tug the right tail, loops slip through the knot one after the other, then everything drops
-  const pullR = sstep(.04,.5,k), pullL = sstep(.22,.66,k), loose = sstep(.42,.78,k), drop = sstep(.6,1,k)*1.4;
-  G.box(-.075,W.yb-cy-drop,zf,.075,W.yb+h-cy-drop,zf+.03,C.rib,V);
-  G.box(-w/2-.03,-.075-drop*1.15,zf,w/2+.03,.075-drop*1.15,zf+.03,C.rib,V);
+  // untie (k: 0 tied → 1 gone): both loops slip through the knot together, the knot loosens into a cross,
+  // then the whole ribbon is lifted off and pulled away (the lift itself is done by the mesh transform)
+  const pull = sstep(0,.45,k), loose = sstep(.3,.65,k), lift = sstep(.5,1,k);
   const s = W.kind === 'door' ? 1.75 : 1.45, z0 = .14;
   const sm = (a,b,x) => { const t = Math.max(0, Math.min(1, (x-a)/(b-a))); return t*t*(3-2*t); };
-  // a flat ribbon loop: runs out along the front, folds round at the far end, comes back behind
-  const loop = (sg, tilt, L, D, hw0, hw1, zc, droop, col) => band(G, 44, u => {
-    const f = 1 - (sg > 0 ? pullR : pullL), fw = .3 + .7*f;   // shrinks as it is pulled through the knot
-    const ph = u*Math.PI*2, e = (1-Math.cos(ph))/2;
-    const lx = .05*s*f + L*s*f*Math.pow(e,.8), lz = D*s*f*Math.sin(ph)*(.6+.4*e);
-    const ct = Math.cos(tilt), st = Math.sin(tilt);
-    const x = sg*lx*ct, y = lx*st - droop*s*f*e*e - drop, z = zc + lz;
-    const hw = (hw0 + (hw1-hw0)*sm(0,.7,e))*s*fw;
-    const cup = .32*Math.sin(ph);   // the ribbon cups a little so the fold reads
-    return {p:[x,y,z], w:[-sg*st*hw, ct*hw, hw*cup]};
-  }, col, V, .012*s, 0, .22);
-  for (const sg of [-1,1]){
-    loop(sg, -.16, .36, .12, .045, .125, z0-.035, .02, lin('#a8222e'));   // lower loop, tucked behind
-    loop(sg,  .36, .41, .14, .045, .135, z0,      .03, C.rib);            // upper loop, in front
-    // long tails hanging down and splaying out, with a fishtail cut
-    const pull = sg > 0 ? pullR : pullL, len = .66 + (sg > 0 ? .42 : .2)*pull, spread = .23 + (sg > 0 ? .3 : .08)*pull;
-    band(G, 30, u => { const x = sg*(.03+spread*u)*s, y = -(.05+len*u)*s - drop, z = z0 - .03 + .035*s*Math.sin(u*Math.PI*1.1);
-      const tw = .28*Math.sin(u*Math.PI*1.2)*sg, hw = (.06 + .045*Math.pow(u,.6))*s, dir = [.66, sg*.23];
-      const pl = Math.hypot(...dir);
-      return {p:[x,y,z], w:[dir[0]/pl*hw*Math.cos(tw), dir[1]/pl*hw*Math.cos(tw), hw*Math.sin(tw)]}; }, C.rib, V, .011*s, .085*s, .14);
-  }
-  // the knot: a short band wrapped round the gathered middle
+  // the straps round the window: flat while tied, they billow and ripple as the knot lets go
+  const rip = (u, ph) => loose*(.16*Math.sin(u*Math.PI) + .05*Math.sin(u*11 + k*14 + ph)) + lift*.25*Math.sin(u*Math.PI);
+  band(G, 26, u => ({p:[.02*loose*Math.sin(u*7 + k*9), W.yb - cy + u*h, zf + .02 + rip(u, 0)], w:[.075,0,0]}), C.rib, V, .02, 0, 0);
+  band(G, 22, u => ({p:[-w/2 - .03 + u*(w + .06), .02*loose*Math.sin(u*6 + k*8), zf + .02 + rip(u, 1.7)], w:[0,.075,0]}), C.rib, V, .02, 0, 0);
+  // one half of the bow (the right); the left is its exact mirror so the bow is symmetric
+  const half = H => {
+    const f = 1 - pull, fw = .3 + .7*f;   // loops shrink as they are pulled through the knot
+    const loop = (tilt, L, D, hw0, hw1, zc, droop, col) => band(H, 44, u => {
+      const ph = u*Math.PI*2, e = (1-Math.cos(ph))/2;
+      const lx = .05*s*f + L*s*f*Math.pow(e,.8), lz = D*s*f*Math.sin(ph)*(.6+.4*e);
+      const ct = Math.cos(tilt), st = Math.sin(tilt);
+      const x = lx*ct, y = lx*st - droop*s*f*e*e, z = zc + lz;
+      const hw = (hw0 + (hw1-hw0)*sm(0,.7,e))*s*fw;
+      const cup = .32*Math.sin(ph);   // the ribbon cups a little so the fold reads
+      return {p:[x,y,z], w:[-st*hw, ct*hw, hw*cup]};
+    }, col, V, .012*s, 0, .22);
+    loop(-.16, .36, .12, .045, .125, z0-.035, .02, lin('#a8222e'));   // lower loop, tucked behind
+    loop( .36, .41, .14, .045, .135, z0,      .03, C.rib);            // upper loop, in front
+    // long tail with a fishtail cut: lengthens as the loop feeds into it, then curls up as the ribbon is lifted
+    const len = .66 + .3*pull, spread = .23 + .12*pull;
+    band(H, 30, u => {
+      const a = lift*1.0*u + loose*.25*u, ca = Math.cos(a), sa = Math.sin(a);
+      const x0 = (.03 + spread*u)*s, y0 = -(.05 + len*u)*s;
+      const x = x0*ca - y0*sa, y = x0*sa + y0*ca;
+      const z = z0 - .03 + .035*s*Math.sin(u*Math.PI*1.1) + loose*.12*u + .04*loose*Math.sin(u*9 + k*12);
+      const tw = .28*Math.sin(u*Math.PI*1.2) + loose*.5*Math.sin(u*5 + k*7), hw = (.06 + .045*Math.pow(u,.6))*s;
+      const dl = Math.hypot(.66,.23), dx = .66/dl, dy = .23/dl, rx = dx*ca - dy*sa, ry = dx*sa + dy*ca;
+      return {p:[x,y,z], w:[rx*hw*Math.cos(tw), ry*hw*Math.cos(tw), hw*Math.sin(tw)]}; }, C.rib, V, .011*s, .085*s, .14);
+  };
+  half(G);
+  const M = new Geo(); half(M);
+  for (let i=0;i<M.d.length;i+=15){ M.d[i] = -M.d[i]; M.d[i+3] = -M.d[i+3]; }
+  G.d = G.d.concat(M.d);
+  // the knot: a short band wrapped round the gathered middle; it shrinks away as it comes undone
   const ks = Math.max(.08, 1 - loose);
-  G.sphere(0,-drop,z0,.07*s*ks,.08*s*ks,.06*s*ks,lin('#8e1a26'),V,null,12,8);
-  band(G, 28, u => { const a = u*Math.PI*2; return {p:[Math.sin(a)*.075*s*ks, -drop, z0 + Math.cos(a)*.06*s*ks], w:[0,.085*s*ks,0]}; }, C.rib, V, .014*s);
-  band(G, 20, u => { const a = -.9 + u*1.8; return {p:[Math.sin(a)*.084*s*ks, .01*s*ks-drop, z0 + Math.cos(a)*.068*s*ks], w:[0,.03*s*ks,.01*s*ks]}; }, lin('#b02430'), V, .01*s);
+  G.sphere(0,0,z0,.07*s*ks,.08*s*ks,.06*s*ks,lin('#8e1a26'),V,null,12,8);
+  band(G, 28, u => { const a = u*Math.PI*2; return {p:[Math.sin(a)*.075*s*ks, 0, z0 + Math.cos(a)*.06*s*ks], w:[0,.085*s*ks,0]}; }, C.rib, V, .014*s);
+  band(G, 20, u => { const a = -.9 + u*1.8; return {p:[Math.sin(a)*.084*s*ks, .01*s*ks, z0 + Math.cos(a)*.068*s*ks], w:[0,.03*s*ks,.01*s*ks]}; }, lin('#b02430'), V, .01*s);
   return {G, cy};
 }
 
@@ -1067,11 +1078,11 @@ canvas.addEventListener('click', e => {
   const W = hitWindow(e.clientX, e.clientY); if (!W) return;
   if (opened[W.d] != null) return showCard(W.d, 0);
   if (W.kind === 'door') {
-    if (isNewYear()) return openSlot(W, DOOR, 3400);
+    if (isNewYear()) return openSlot(W, DOOR, 3800);
     W.shake = NOW; return toast('这扇大门会在新年零点打开');
   }
   if (!canOpen()) { W.shake = NOW; return toast(lockedMsg()); }
-  openSlot(W, W.n, 3400);
+  openSlot(W, W.n, 3800);
 });
 const modal = document.getElementById('modal');
 function showCard(slot, delay){
@@ -1119,7 +1130,7 @@ function updateDyn(t){
   WINS.forEach(W => {
     let rp, sp;
     if (W.state === 1) { rp = 1; sp = 1; }
-    else if (W.state === 2) { const e = t - W.t0; rp = clamp(e/1.8, 0, 1); sp = clamp((e-1.45)/1.7, 0, 1); if (sp < 1) anim = true; }
+    else if (W.state === 2) { const e = t - W.t0; rp = clamp(e/2.3, 0, 1); sp = clamp((e-1.75)/1.7, 0, 1); if (sp < 1) anim = true; }
     else { rp = 0; sp = 0; }
     const door = W.kind === 'door', maxA = door ? 1.75 : 2.98;
     const ang = ease(sp) * maxA;
@@ -1130,16 +1141,18 @@ function updateDyn(t){
     // ribbon: slips down, tumbles and vanishes
     const c = W.rib.c, ready = W.state === 0 && (W.kind === 'door' ? isNewYear() : canOpen());
     const pulse = ready ? 1 + .02*Math.sin(t*2.6) : 1;
-    if (W.state === 2 && rp < 1 && Math.abs(rp - W.rib.k) > 1e-3) {   // rebuild the bow as it unties
-      W.rib.k = rp; const g = ribbonGeo(W, ease(rp)).G;
+    const kk = W.state === 2 ? ease(rp) : 0;
+    if ((W.state === 2 && rp < 1 || W.state === 0) && Math.abs(kk - W.rib.k) > 1e-3) {   // rebuild the bow as it unties (or after a reset)
+      W.rib.k = kk; const g = ribbonGeo(W, kk).G;
       gl.bindBuffer(gl.ARRAY_BUFFER, W.rib.mesh.buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.d), gl.DYNAMIC_DRAW); W.rib.mesh.count = g.d.length/15;
     }
-    const sc = W.state === 1 ? 1e-3 : Math.max(1e-3, (1 - sstep(.86, 1, rp)) * pulse);
-    W.rib.mesh.model = M4.chain(M4.T(c[0]+shx, c[1] - sstep(.86,1,rp)*.4, c[2]), M4.S(1,sc,1));
+    // lifted off and pulled away up to the right, toward us, fading as it leaves
+    const lift = sstep(.5, 1, kk), sc = W.state === 1 ? 1e-3 : Math.max(1e-3, (1 - sstep(.82, 1, kk)) * pulse);
+    W.rib.mesh.model = M4.chain(M4.T(c[0] + shx + lift*lift*1.6, c[1] + lift*lift*3.2, c[2] + lift*1.6), M4.RZ(-lift*.45), M4.S(sc,sc,sc));
     if (W.num) { const a = W.state ? 1 : 0, ss = 2.05;
       W.numA = a; W.numM = M4.chain(M4.T(W.cx, W.yb + W.h*.5, -.2), M4.S(ss,ss,ss)); }
     // light inside
-    const op = W.state === 1 ? 1 : W.state === 2 ? sstep(1.3, 3.1, t - W.t0) : 0;
+    const op = W.state === 1 ? 1 : W.state === 2 ? sstep(1.6, 3.4, t - W.t0) : 0;
     WGLOW[W.d] = ENV.st.n*.55 + op*(.35 + ENV.st.n*.55);
   });
   WGLOW[9] = ENV.st.n*.65;
@@ -1338,7 +1351,7 @@ function loop(){
   const ny = isNewYear();
   if (ny && !FW.on) updateStatus();
   FW.on = ny;
-  if (ny) { const D = WINS.find(W => W.kind === 'door'); if (D.state === 0 && opened[D.d] == null) openSlot(D, DOOR, 3800); }
+  if (ny) { const D = WINS.find(W => W.kind === 'door'); if (D.state === 0 && opened[D.d] == null) openSlot(D, DOOR, 4200); }
   updateFW(dt); updateClock(); updateGate();
   draw(t); drawSnow();
   requestAnimationFrame(loop);
