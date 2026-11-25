@@ -263,7 +263,7 @@ class Geo {
 const C = {
   stone: lin('#e8dcc7'), stoneD: lin('#cdbd9f'), trim: lin('#f2e9d8'), plinth: lin('#bfb197'),
   zinc: lin('#6b7887'), zincD: lin('#4f5a66'), chim: lin('#d8ccb6'), pot: lin('#a85f3a'),
-  green: lin('#2c5a50'), iron: lin('#1d1e23'), gold: lin('#c9a24f'), rib: lin('#5c0e18'),
+  green: lin('#2c5a50'), iron: lin('#1d1e23'), gold: lin('#c9a24f'), rib: lin('#c42a36'),
   glass: lin('#1b2332'), frame: lin('#efe6d6'), snow: lin('#f3f6fb'),
   wall: lin('#f2b06c'), wallS: lin('#c27a42'), floor: lin('#6e4022'), ceil: lin('#b0703a'), curtain: lin('#f5e3c2'),
   gift: lin('#8e1a2b'), giftB: lin('#21345a'), giftR: lin('#e8c67c'),
@@ -512,24 +512,27 @@ function leafGeo(lw, lh, door){
   return G;
 }
 // a thin ribbon band (with thickness) swept along a path; pf(u) -> {p, w} with w = half-width vector
-function band(G, n, pf, col, m, th = .014, notch = 0){
+function band(G, n, pf, col, m, th = .014, notch = 0, bulge = .2){
   const R = [];
   for (let i=0;i<=n;i++){ const u = i/n, {p, w} = pf(u), q = pf(Math.min(1, u+.01)), q0 = pf(Math.max(0, u-.01));
     const t = [q.p[0]-q0.p[0], q.p[1]-q0.p[1], q.p[2]-q0.p[2]];
     let nn = [t[1]*w[2]-t[2]*w[1], t[2]*w[0]-t[0]*w[2], t[0]*w[1]-t[1]*w[0]]; const l = Math.hypot(...nn) || 1; nn = nn.map(v => v/l);
-    const tl = Math.hypot(...t) || 1; R.push({p, w, n: nn, t: t.map(v => v/tl)}); }
-  const add = (a,b,k=1) => [a[0]+b[0]*k, a[1]+b[1]*k, a[2]+b[2]*k];
-  for (const side of [1,-1]){
-    const off = th/2*side, V = (P, N) => G.v(P, N.map(v => v*side), col, m, [0,0]);
-    for (let i=0;i<n;i++){
-      const A = R[i], B = R[i+1];
-      const a0 = add(add(A.p,A.w,-1),A.n,off), a1 = add(add(A.p,A.w,1),A.n,off), ac = add(A.p,A.n,off);
-      let b0 = add(add(B.p,B.w,-1),B.n,off), b1 = add(add(B.p,B.w,1),B.n,off), bc = add(B.p,B.n,off);
-      if (notch && i === n-1) bc = add(bc, B.t, -notch);
-      const quad = (p0,p1,p2,p3,n0,n1) => { V(p0,n0); V(p1,n0); V(p2,n1); V(p0,n0); V(p2,n1); V(p3,n1); };
-      if (side > 0) { quad(a0,ac,bc,b0,A.n,B.n); quad(ac,a1,b1,bc,A.n,B.n); }
-      else { quad(a0,b0,bc,ac,A.n,B.n); quad(ac,bc,b1,a1,A.n,B.n); }
-    }
+    const tl = Math.hypot(...t) || 1, wl = Math.hypot(...w) || 1; R.push({p, w, wl, wd: w.map(v => v/wl), n: nn, t: t.map(v => v/tl)}); }
+  const S = [-1,-.6,-.25,0,.25,.6,1];   // across the width
+  const vert = (A, s, side, last) => {
+    const b = bulge*A.wl, h = b*(1-s*s) + side*th/2;
+    let P = [A.p[0]+A.w[0]*s+A.n[0]*h, A.p[1]+A.w[1]*s+A.n[1]*h, A.p[2]+A.w[2]*s+A.n[2]*h];
+    if (last && notch) { const k = notch*(1-Math.abs(s)); P = [P[0]-A.t[0]*k, P[1]-A.t[1]*k, P[2]-A.t[2]*k]; }
+    const g = 2*b*s/A.wl; let N = [A.n[0]+A.wd[0]*g, A.n[1]+A.wd[1]*g, A.n[2]+A.wd[2]*g]; const l = Math.hypot(...N) || 1;
+    return [P, N.map(v => v/l*side)];
+  };
+  for (const side of [1,-1]) for (let i=0;i<n;i++) for (let j=0;j<S.length-1;j++){
+    const last = i === n-1;
+    const [a0,na0] = vert(R[i],S[j],side,false), [a1,na1] = vert(R[i],S[j+1],side,false);
+    const [b0,nb0] = vert(R[i+1],S[j],side,last), [b1,nb1] = vert(R[i+1],S[j+1],side,last);
+    const V = (P,N) => G.v(P,N,col,m,[0,0]);
+    if (side > 0) { V(a0,na0); V(a1,na1); V(b1,nb1); V(a0,na0); V(b1,nb1); V(b0,nb0); }
+    else { V(a0,na0); V(b1,nb1); V(a1,na1); V(a0,na0); V(b0,nb0); V(b1,nb1); }
   }
 }
 function ribbonGeo(W){
@@ -540,28 +543,28 @@ function ribbonGeo(W){
   const s = W.kind === 'door' ? 1.75 : 1.45, z0 = .14;
   const sm = (a,b,x) => { const t = Math.max(0, Math.min(1, (x-a)/(b-a))); return t*t*(3-2*t); };
   // a flat ribbon loop: runs out along the front, folds round at the far end, comes back behind
-  const loop = (sg, tilt, L, D, hw0, hw1, zc, droop, col) => band(G, 40, u => {
+  const loop = (sg, tilt, L, D, hw0, hw1, zc, droop, col) => band(G, 48, u => {
     const ph = u*Math.PI*2, e = (1-Math.cos(ph))/2;
     const lx = .05*s + L*s*Math.pow(e,.8), lz = D*s*Math.sin(ph)*(.6+.4*e);
     const ct = Math.cos(tilt), st = Math.sin(tilt);
     const x = sg*lx*ct, y = lx*st - droop*s*e*e, z = zc + lz;
     const hw = (hw0 + (hw1-hw0)*sm(0,.7,e))*s;
-    const cup = .22*Math.sin(ph);   // the ribbon cups a little so the fold reads
+    const cup = .32*Math.sin(ph);   // the ribbon cups a little so the fold reads
     return {p:[x,y,z], w:[-sg*st*hw, ct*hw, hw*cup]};
-  }, col, V, .018*s);
+  }, col, V, .012*s, 0, .22);
   for (const sg of [-1,1]){
-    loop(sg, -.16, .36, .085, .045, .125, z0-.035, .02, lin('#420912'));   // lower loop, tucked behind
-    loop(sg,  .36, .41, .095, .045, .135, z0,      .03, C.rib);            // upper loop, in front
+    loop(sg, -.16, .36, .12, .045, .125, z0-.035, .02, lin('#a8222e'));   // lower loop, tucked behind
+    loop(sg,  .36, .41, .14, .045, .135, z0,      .03, C.rib);            // upper loop, in front
     // long tails hanging down and splaying out, with a fishtail cut
-    band(G, 22, u => { const x = sg*(.03+.23*u)*s, y = -(.05+.66*u)*s, z = z0 - .03 + .035*s*Math.sin(u*Math.PI*1.1);
+    band(G, 30, u => { const x = sg*(.03+.23*u)*s, y = -(.05+.66*u)*s, z = z0 - .03 + .035*s*Math.sin(u*Math.PI*1.1);
       const tw = .28*Math.sin(u*Math.PI*1.2)*sg, hw = (.06 + .045*Math.pow(u,.6))*s, dir = [.66, sg*.23];
       const pl = Math.hypot(...dir);
-      return {p:[x,y,z], w:[dir[0]/pl*hw*Math.cos(tw), dir[1]/pl*hw*Math.cos(tw), hw*Math.sin(tw)]}; }, C.rib, V, .016*s, .085*s);
+      return {p:[x,y,z], w:[dir[0]/pl*hw*Math.cos(tw), dir[1]/pl*hw*Math.cos(tw), hw*Math.sin(tw)]}; }, C.rib, V, .011*s, .085*s, .14);
   }
   // the knot: a short band wrapped round the gathered middle
-  G.sphere(0,0,z0,.07*s,.08*s,.06*s,lin('#33060d'),V,null,12,8);
+  G.sphere(0,0,z0,.07*s,.08*s,.06*s,lin('#8e1a26'),V,null,12,8);
   band(G, 28, u => { const a = u*Math.PI*2; return {p:[Math.sin(a)*.075*s, 0, z0 + Math.cos(a)*.06*s], w:[0,.085*s,0]}; }, C.rib, V, .014*s);
-  band(G, 20, u => { const a = -.9 + u*1.8; return {p:[Math.sin(a)*.084*s, .01*s, z0 + Math.cos(a)*.068*s], w:[0,.03*s,.01*s]}; }, lin('#6e1420'), V, .01*s);
+  band(G, 20, u => { const a = -.9 + u*1.8; return {p:[Math.sin(a)*.084*s, .01*s, z0 + Math.cos(a)*.068*s], w:[0,.03*s,.01*s]}; }, lin('#b02430'), V, .01*s);
   return {G, cy};
 }
 
@@ -715,7 +718,7 @@ void main(){
   int id=int(v_mat.x+.5); float snowy=v_mat.y; int wid=int(v_mat.z+.5);
   vec3 wp=v_wp, V=normalize(u_cam-wp);
   vec3 alb=v_col, E=vec3(0.); float spec=.04, shin=12.;
-  bool lit=true; float outA=1.;
+  bool lit=true; float outA=1., wrap=0.;
   if(id==1){ // limestone
     alb*=.93+.07*noise(wp.xy*2.3+wp.z)+.05*(noise(wp.xy*19.)-.5);
     if(abs(N.z)>.6 && wp.z>-.6){
@@ -743,7 +746,7 @@ void main(){
       spec=.15*w; shin=30.; }
     E+=v_col*v_mat.w*0.; }
   else if(id==11){ alb*=.7+.45*fbm3(wp.xz*.01+wp.y*.004); }
-  else if(id==12){ float rim=pow(1.-max(dot(N,V),0.),2.); alb*=.75+.9*rim; spec=.2; shin=10.; }
+  else if(id==12){ float fr=1.-abs(dot(N,V)); alb*=.9+.3*fr*fr; spec=.3; shin=14.; wrap=.65; }
   else if(id==18){ lit=false; vec4 t=texture(u_tags,vec2((u_digit-1.+clamp(v_uv.x,0.,1.))/7.,clamp(v_uv.y,0.,1.))); outA=t.a*u_numA; E=vec3(.022,.062,.04)*(1.25+u_n*.3); }
   else if(id==19){ alb*=.94+.1*noise(wp.xy*14.); float sp=step(.955,hash(floor(wp.xy*70.))); alb=mix(alb,alb*vec3(1.35,1.2,1.1)+.02,sp*.7); float dk=step(.97,hash(floor(wp.xy*55.)+3.)); alb*=1.-.35*dk; spec=.1; shin=14.; }
   else if(id==14){ lit=false; E=alb*(.6+u_n*3.2)*(v_mat.w>.5?.45:1.); }
@@ -752,7 +755,7 @@ void main(){
   vec3 c=E;
   if(lit){
     float sh=shadowF(N);
-    float nl=max(dot(N,u_L),0.);
+    float nl=max((dot(N,u_L)+wrap)/(1.+wrap),0.);
     vec3 amb=mix(u_ambG,u_ambS,N.y*.5+.5);
     float ao=(id==1||id==2)?mix(.72,1.,smoothstep(-.5,.1,wp.z)):1.;
     vec3 H=normalize(u_L+V);
@@ -800,26 +803,27 @@ void main(){
   float md=dot(rd,u_moonSky);
   if(u_moonVis>0.){
     vec3 mz=u_moonSky; vec3 mx=normalize(cross(mz,vec3(0,1,0))); vec3 my=cross(mx,mz);
-    float mr=.028; vec2 mp=vec2(dot(rd,mx),dot(rd,my))/mr; float rr=length(mp);
+    float mr=.022; vec2 mp=vec2(dot(rd,mx),dot(rd,my))/mr; float rr=length(mp);
     col+=vec3(.55,.65,1.)*u_moonVis*(.12*exp(-acos(clamp(md,-1.,1.))*28.)+.04*exp(-acos(clamp(md,-1.,1.))*7.));
     if(md>0.&&rr<1.){
       vec3 n=vec3(mp,sqrt(1.-rr*rr));
       float l=max(dot(n,u_moonL),0.);
+      vec2 q=mp+.13*(vec2(fbm(mp*2.3+1.),fbm(mp*2.3+7.))-.5);   // warp so the maria have ragged, natural edges
       float mar=0.;
-      mar+=smoothstep(.34,.05,length((mp-vec2(-.30,.38))*vec2(1.,1.15)));
-      mar+=smoothstep(.22,.04,length(mp-vec2(.10,.36)));
-      mar+=smoothstep(.26,.05,length((mp-vec2(.27,.08))*vec2(1.,1.2)));
-      mar+=smoothstep(.14,.03,length((mp-vec2(.66,.28))*vec2(1.,1.3)));
-      mar+=smoothstep(.44,.08,length((mp-vec2(-.56,-.02))*vec2(1.,.72)));
-      mar+=smoothstep(.18,.04,length(mp-vec2(.33,-.24)));
-      mar+=smoothstep(.2,.04,length(mp-vec2(-.26,-.36)));
-      mar=clamp(mar,0.,1.)*(.75+.5*fbm(mp*3.2+2.));
-      float cr=fbm(mp*7.+9.);
+      mar+=smoothstep(.34,.05,length((q-vec2(-.30,.38))*vec2(1.,1.15)));
+      mar+=smoothstep(.22,.04,length(q-vec2(.10,.36)));
+      mar+=smoothstep(.26,.05,length((q-vec2(.27,.08))*vec2(1.,1.2)));
+      mar+=smoothstep(.14,.03,length((q-vec2(.66,.28))*vec2(1.,1.3)));
+      mar+=smoothstep(.44,.08,length((q-vec2(-.56,-.02))*vec2(1.,.72)));
+      mar+=smoothstep(.18,.04,length(q-vec2(.33,-.24)));
+      mar+=smoothstep(.2,.04,length(q-vec2(-.26,-.36)));
+      mar=clamp(mar,0.,1.)*(.7+.6*fbm(mp*4.5+2.));
+      float cr=fbm(mp*9.+9.)*.6+fbm(mp*22.+3.)*.4;
       float ty=length(mp-vec2(-.14,-.72));
       float rays=smoothstep(.75,.0,ty)*pow(abs(sin(atan(mp.y+.72,mp.x+.14)*7.)),12.)*.05;
-      vec3 alb=vec3(.9,.89,.86)*(1.-.34*clamp(mar,0.,1.))*(.93+.1*cr)+vec3(.05)*smoothstep(.05,.0,ty)+rays;
-      float limb=.82+.18*n.z;
-      vec3 mc=alb*(l*.95*limb+.012)+vec3(.015,.02,.03);
+      vec3 alb=vec3(.9,.89,.86)*(1.-.3*clamp(mar,0.,1.))*(.9+.16*cr)+vec3(.05)*smoothstep(.05,.0,ty)+rays;
+      float limb=.93+.07*n.z;
+      vec3 mc=alb*(.8*limb)+vec3(.015,.02,.03);
       col=mix(col,mc,smoothstep(1.,.96,rr)*u_moonVis);
     }
   }
@@ -976,7 +980,7 @@ function computeEnv(h){
   const moonSky = norm([Math.sin((ms-.5)*.6), Math.sin(-.02 + .5*mel), -Math.cos((ms-.5)*.6)]);
   const moonLdir = norm([-Math.cos(Math.PI*clamp(ms,0,1)), .35+.8*mel, .8]);
   const ph = moonPhase(dayDate(1).getTime() + 0), phase = moonPhase(Date.now());
-  const p = PREVIEW ? moonPhase(dayDate(1).getTime()) : phase;
+  const p = .5;   // always a full, round moon
   const moonL = norm([Math.sin(2*Math.PI*p), .05, -Math.cos(2*Math.PI*p)]);
   const moonBright = .5 - .5*Math.cos(2*Math.PI*p);
   const sunVis = up ? sstep(-.02, .04, Math.min(s, 1-s)) : 0;
@@ -1039,7 +1043,7 @@ canvas.addEventListener('click', e => {
 const modal = document.getElementById('modal');
 function showCard(slot, delay){
   const day = opened[slot], ny = +slot === DOOR, c = (ny ? NEW_YEAR : CONTENT[day-1]) || {};
-  document.getElementById('card').innerHTML = `<svg class="bowtop" width="52" height="40" viewBox="-18 -13 36 32"><path d="M0 0C-4 -11 -16 -10 -14 0C-16 9 -4 11 0 0Z" fill="#7a1824"/><path d="M0 0C4 -11 16 -10 14 0C16 9 4 11 0 0Z" fill="#7a1824"/><path d="M-1 1L-7.5 16L-4.2 15.2L-2.8 17.5L1.2 3Z" fill="#5a0c18"/><path d="M1 1L6.5 16L3.4 15L2.2 17.5L-1.2 3Z" fill="#7a1824"/><ellipse rx="3" ry="3.5" fill="#5a0e1a"/></svg>
+  document.getElementById('card').innerHTML = `<svg class="bowtop" width="52" height="40" viewBox="-18 -13 36 32"><path d="M0 0C-4 -11 -16 -10 -14 0C-16 9 -4 11 0 0Z" fill="#c42a36"/><path d="M0 0C4 -11 16 -10 14 0C16 9 4 11 0 0Z" fill="#c42a36"/><path d="M-1 1L-7.5 16L-4.2 15.2L-2.8 17.5L1.2 3Z" fill="#8e1a26"/><path d="M1 1L6.5 16L3.4 15L2.2 17.5L-1.2 3Z" fill="#c42a36"/><ellipse rx="3" ry="3.5" fill="#a01f2b"/></svg>
     <div class="meta">${ny ? 'HAPPY NEW YEAR · 1月1日' : `NO. ${day}`}</div><h2>${c.title || ''}</h2>
     ${c.img ? `<img src="${c.img}" alt="">` : ''}<p>${c.text || ''}</p><button id="close">收下啦</button>`;
   setTimeout(() => modal.classList.add('on'), delay);
@@ -1318,3 +1322,4 @@ if (PREVIEW) {
 }
 </script>
 </body>
+</html>
