@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字体对比 · Chia's Countdown Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Serif+SC:wght@400;600&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Italianno&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fontsource/lxgw-wenkai/400.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fontsource/lxgw-wenkai/500.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b1030;color:#f8efd8;font:14px/1.6 -apple-system,system-ui,sans-serif;padding:24px 16px 60px}
+h1{font-family:'Italianno',cursive;font-weight:400;font-size:44px;color:#f1d89b;text-align:center;line-height:1}
+.intro{text-align:center;color:#a7abc0;margin:10px auto 26px;max-width:460px}
+.opt{max-width:460px;margin:0 auto 34px}
+.tag{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:10px}
+.tag b{font-size:17px;color:#f1d89b}
+.tag span{color:#a7abc0;font-size:12px;text-align:right}
+.card{background:#fbf7ee;color:#2d2620;border-radius:3px;padding:30px 22px 22px;text-align:center;position:relative}
+.card::before{content:"";position:absolute;inset:8px;border:1px solid #d9bf82;pointer-events:none}
+.meta{font:600 12px/1 Georgia,serif;letter-spacing:.32em;color:#a3874c}
+.card h2{font-weight:600;font-size:22px;margin:10px 0 10px;letter-spacing:.04em}
+.card p{font-size:15px;line-height:1.85;color:#4a3f34;white-space:pre-line}
+.card .btn{display:inline-block;margin-top:16px;font-size:14px;letter-spacing:.2em;padding:7px 22px;border:1px solid #2d2620;border-radius:999px}
+.ui{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.pill{font-size:12px;letter-spacing:.08em;padding:5px 12px;border-radius:999px;border:1px solid rgba(241,216,155,.35);background:rgba(255,255,255,.06)}
+.all{margin-top:12px;font-size:20px;line-height:1.7;letter-spacing:.06em;color:#e8e2d2;word-break:break-all}
+.note{margin-top:6px;font-size:12px;color:#a7abc0}
+</style>
+</head>
+<body>
+<h1>Chia's Countdown Calendar</h1>
+<p class="intro">每个选项都用日历里真实出现的文字排了一遍。最下面那一大段是页面上用到的全部汉字，如果某个字跟周围长得不一样（更粗、更方或者更细），就说明这款字体缺了这个字。</p>
+<div id="list"></div>
+<script>
+const ALL = '一七上下不个么乐也了事些什今仓以们件任份会体你例假做允共内再写几出分到前务动包卡历参发只可号同名后听启响哦啦器回围图圈圣在场址多夜大天她如始字完实容将小就己带年库度开张影很得忆快想意愿我或所扇才打拆拍持挑支收改放效数文新日时明是显晚景暗月有来杯柔歌段每测浏温点烟热照片物现生用的看真着示礼空窗窝笑第经给网置能自花苦被装要览让记许试诞谢走起跨较辛过还这进选那都里重钟门间零需面页首';
+const OPTS = [
+  ['现在用的：Noto Serif TC（思源宋体 · 繁体）', '对照组，简体字会有缺', "'Noto Serif TC'"],
+  ['A · Noto Serif SC（思源宋体 · 简体）', '跟现在同一个风格，只是补齐简体字；最稳', "'Noto Serif SC'"],
+  ['B · 霞鹜文楷 LXGW WenKai', '楷书加仿宋的手写感，温柔、有文艺气', "'LXGW WenKai'"],
+  ['C · 站酷小薇 ZCOOL XiaoWei', '细长优雅的标题字；字库较小，可能也有缺字', "'ZCOOL XiaoWei'"],
+  ['D · 马善政楷书 Ma Shan Zheng', '毛笔书法，很有节日感；适合标题，正文偏难读', "'Ma Shan Zheng'"],
+];
+document.getElementById('list').innerHTML = OPTS.map(([n, d, f]) => `
+  <section class="opt">
+    <div class="tag"><b>${n}</b><span>${d}</span></div>
+    <div class="card" style="font-family:${f},serif">
+      <div class="meta">NO. 1</div><h2>圣诞快乐</h2>
+      <p>第一份礼物。\n愿你今天被很多很多温柔包围。</p>
+      <div class="btn">收下啦</div>
+    </div>
+    <div class="ui" style="font-family:${f},serif">
+      <span class="pill">将在 12 月 25 日零点开启</span>
+      <span class="pill">今天可以挑一扇窗打开 ✦</span>
+      <span class="pill">这扇大门会在新年零点打开</span>
+      <span class="pill">2027，我们也要一起。</span>
+    </div>
+    <div class="all" style="font-family:${f},serif">${ALL}</div>
+  </section>`).join('');
+</script>
+</body>
+</html>
