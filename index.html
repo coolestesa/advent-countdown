@@ -539,7 +539,7 @@ function ribbonGeo(W, k = 0){
   const G = new Geo(), V = MAT(VELVET), {w,h} = W, by = W.kind === 'door' ? .5 : .52;
   const cy = W.yb + h*by, zf = .02;
   // untie (k: 0 tied → 1 gone): both loops slip through the knot together, the knot loosens into a cross,
-  // then the whole ribbon is lifted off and pulled away (the lift itself is done by the mesh transform)
+  // then it slumps down onto the sill and fades (the slump and fade are done in updateDyn)
   const pull = sstep(0,.45,k), loose = sstep(.3,.65,k), lift = sstep(.5,1,k);
   const s = W.kind === 'door' ? 1.75 : 1.45, z0 = .14;
   const sm = (a,b,x) => { const t = Math.max(0, Math.min(1, (x-a)/(b-a))); return t*t*(3-2*t); };
@@ -561,10 +561,10 @@ function ribbonGeo(W, k = 0){
     }, col, V, .012*s, 0, .22);
     loop(-.16, .36, .12, .045, .125, z0-.035, .02, lin('#a8222e'));   // lower loop, tucked behind
     loop( .36, .41, .14, .045, .135, z0,      .03, C.rib);            // upper loop, in front
-    // long tail with a fishtail cut: lengthens as the loop feeds into it, then curls up as the ribbon is lifted
+    // long tail with a fishtail cut: lengthens as the loop feeds into it, then hangs loose
     const len = .66 + .3*pull, spread = .23 + .12*pull;
     band(H, 30, u => {
-      const a = lift*1.0*u + loose*.25*u, ca = Math.cos(a), sa = Math.sin(a);
+      const a = loose*.25*u, ca = Math.cos(a), sa = Math.sin(a);
       const x0 = (.03 + spread*u)*s, y0 = -(.05 + len*u)*s;
       const x = x0*ca - y0*sa, y = x0*sa + y0*ca;
       const z = z0 - .03 + .035*s*Math.sin(u*Math.PI*1.1) + loose*.12*u + .04*loose*Math.sin(u*9 + k*12);
@@ -718,7 +718,7 @@ in vec3 v_wp; in vec3 v_n; in vec3 v_col; in vec4 v_mat; in vec2 v_uv; in vec4 v
 uniform vec3 u_cam, u_L, u_Lcol, u_ambS, u_ambG; uniform float u_n, u_t, u_exp, u_fogD;
 uniform sampler2DShadow u_sm; uniform sampler2D u_tags;
 uniform float u_wg[10]; uniform vec4 u_pl[14]; uniform int u_npl;
-uniform float u_digit, u_numA; uniform vec4 u_fl[4]; uniform vec3 u_flc[4]; uniform vec4 u_fb[4];
+uniform float u_digit, u_numA, u_alpha; uniform vec4 u_fl[4]; uniform vec3 u_flc[4]; uniform vec4 u_fb[4];
 out vec4 o;
 ${COMMON}
 float shadowF(vec3 N){
@@ -786,7 +786,7 @@ void main(){
   float dist=length(wp-u_cam);
   float f=1.-exp(-dist*u_fogD);
   c=mix(c,skyBase(-V)*1.02,f);
-  o=vec4(outCol(c*u_exp),outA);
+  o=vec4(outCol(c*u_exp),outA*u_alpha);
 }`;
 
 const SKY_VS = `#version 300 es
@@ -1146,9 +1146,10 @@ function updateDyn(t){
       W.rib.k = kk; const g = ribbonGeo(W, kk).G;
       gl.bindBuffer(gl.ARRAY_BUFFER, W.rib.mesh.buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.d), gl.DYNAMIC_DRAW); W.rib.mesh.count = g.d.length/15;
     }
-    // lifted off and pulled away up to the right, toward us, fading as it leaves
-    const lift = sstep(.5, 1, kk), sc = W.state === 1 ? 1e-3 : Math.max(1e-3, (1 - sstep(.82, 1, kk)) * pulse);
-    W.rib.mesh.model = M4.chain(M4.T(c[0] + shx + lift*lift*1.6, c[1] + lift*lift*3.2, c[2] + lift*1.6), M4.RZ(-lift*.45), M4.S(sc,sc,sc));
+    // once undone it slumps down onto the windowsill and fades away there
+    const drop = ease(sstep(.45, 1, kk)), sc = W.state === 1 ? 1e-3 : pulse, hb = c[1] - W.yb;
+    W.rib.mesh.alpha = W.state === 1 ? 0 : 1 - sstep(.6, 1, kk);
+    W.rib.mesh.model = M4.chain(M4.T(c[0] + shx, W.yb + hb*(1 - .75*drop), c[2] + drop*.12), M4.S(sc, sc*(1 - .55*drop), sc));
     if (W.num) { const a = W.state ? 1 : 0, ss = 2.05;
       W.numA = a; W.numM = M4.chain(M4.T(W.cx, W.yb + W.h*.5, -.2), M4.S(ss,ss,ss)); }
     // light inside
@@ -1171,7 +1172,7 @@ function draw(t){
     gl.bindFramebuffer(gl.FRAMEBUFFER, smFB); gl.viewport(0,0,SM,SM); gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST); gl.useProgram(P_SH.p); gl.uniformMatrix4fv(P_SH.U.u_lvp,false,LVP);
     gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 3);
-    for (const m of [world, ...dyn]) { gl.uniformMatrix4fv(P_SH.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
+    for (const m of [world, ...dyn]) { if ((m.alpha ?? 1) < .5) continue; gl.uniformMatrix4fv(P_SH.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
     gl.disable(gl.POLYGON_OFFSET_FILL);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); smDirty = false;
   }
@@ -1205,7 +1206,13 @@ function draw(t){
   gl.uniform4fv(P.U.u_pl, new Float32Array(pl)); gl.uniform1i(P.U.u_npl, pl.length/4);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(P.U.u_sm, 0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tagTex); gl.uniform1i(P.U.u_tags, 1);
-  for (const m of [world, ...dyn]) { gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
+  for (const m of [world, ...dyn]) {
+    const al = m.alpha ?? 1; if (al <= .01) continue;
+    if (al < 1) { gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE); gl.depthMask(false); }
+    gl.uniform1f(P.U.u_alpha, al); gl.uniformMatrix4fv(P.U.u_model,false,m.model); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count);
+    if (al < 1) { gl.disable(gl.BLEND); gl.depthMask(true); }
+  }
+  gl.uniform1f(P.U.u_alpha, 1);
   const wa = -t*.045;
   wheel.model = M4.chain(WHEEL_AT, M4.RZ(wa)); gl.uniformMatrix4fv(P.U.u_model,false,wheel.model); gl.bindVertexArray(wheel.vao); gl.drawArrays(gl.TRIANGLES,0,wheel.count);
   for (let i=0;i<24;i++){ const a = i/24*Math.PI*2 + wa, m = cabins[i%4]; gl.uniformMatrix4fv(P.U.u_model,false,M4.chain(WHEEL_AT, M4.T(Math.cos(a)*22, Math.sin(a)*22-1.5, 0))); gl.bindVertexArray(m.vao); gl.drawArrays(gl.TRIANGLES,0,m.count); }
