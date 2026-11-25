@@ -535,20 +535,23 @@ function band(G, n, pf, col, m, th = .014, notch = 0, bulge = .2){
     else { V(a0,na0); V(b1,nb1); V(a1,na1); V(a0,na0); V(b0,nb0); V(b1,nb1); }
   }
 }
-function ribbonGeo(W){
+function ribbonGeo(W, k = 0){
   const G = new Geo(), V = MAT(VELVET), {w,h,arch} = W, by = W.kind === 'door' ? .5 : .52;
   const cy = W.yb + h*by, zf = .02;
-  G.box(-.075,W.yb-cy,zf,.075,W.yb+h-cy,zf+.03,C.rib,V);
-  G.box(-w/2-.03,-.075,zf,w/2+.03,.075,zf+.03,C.rib,V);
+  // untie (k: 0 tied → 1 undone): tug the right tail, loops slip through the knot one after the other, then everything drops
+  const pullR = sstep(.04,.5,k), pullL = sstep(.22,.66,k), loose = sstep(.42,.78,k), drop = sstep(.6,1,k)*1.4;
+  G.box(-.075,W.yb-cy-drop,zf,.075,W.yb+h-cy-drop,zf+.03,C.rib,V);
+  G.box(-w/2-.03,-.075-drop*1.15,zf,w/2+.03,.075-drop*1.15,zf+.03,C.rib,V);
   const s = W.kind === 'door' ? 1.75 : 1.45, z0 = .14;
   const sm = (a,b,x) => { const t = Math.max(0, Math.min(1, (x-a)/(b-a))); return t*t*(3-2*t); };
   // a flat ribbon loop: runs out along the front, folds round at the far end, comes back behind
-  const loop = (sg, tilt, L, D, hw0, hw1, zc, droop, col) => band(G, 48, u => {
+  const loop = (sg, tilt, L, D, hw0, hw1, zc, droop, col) => band(G, 44, u => {
+    const f = 1 - (sg > 0 ? pullR : pullL), fw = .3 + .7*f;   // shrinks as it is pulled through the knot
     const ph = u*Math.PI*2, e = (1-Math.cos(ph))/2;
-    const lx = .05*s + L*s*Math.pow(e,.8), lz = D*s*Math.sin(ph)*(.6+.4*e);
+    const lx = .05*s*f + L*s*f*Math.pow(e,.8), lz = D*s*f*Math.sin(ph)*(.6+.4*e);
     const ct = Math.cos(tilt), st = Math.sin(tilt);
-    const x = sg*lx*ct, y = lx*st - droop*s*e*e, z = zc + lz;
-    const hw = (hw0 + (hw1-hw0)*sm(0,.7,e))*s;
+    const x = sg*lx*ct, y = lx*st - droop*s*f*e*e - drop, z = zc + lz;
+    const hw = (hw0 + (hw1-hw0)*sm(0,.7,e))*s*fw;
     const cup = .32*Math.sin(ph);   // the ribbon cups a little so the fold reads
     return {p:[x,y,z], w:[-sg*st*hw, ct*hw, hw*cup]};
   }, col, V, .012*s, 0, .22);
@@ -556,15 +559,17 @@ function ribbonGeo(W){
     loop(sg, -.16, .36, .12, .045, .125, z0-.035, .02, lin('#a8222e'));   // lower loop, tucked behind
     loop(sg,  .36, .41, .14, .045, .135, z0,      .03, C.rib);            // upper loop, in front
     // long tails hanging down and splaying out, with a fishtail cut
-    band(G, 30, u => { const x = sg*(.03+.23*u)*s, y = -(.05+.66*u)*s, z = z0 - .03 + .035*s*Math.sin(u*Math.PI*1.1);
+    const pull = sg > 0 ? pullR : pullL, len = .66 + (sg > 0 ? .42 : .2)*pull, spread = .23 + (sg > 0 ? .3 : .08)*pull;
+    band(G, 30, u => { const x = sg*(.03+spread*u)*s, y = -(.05+len*u)*s - drop, z = z0 - .03 + .035*s*Math.sin(u*Math.PI*1.1);
       const tw = .28*Math.sin(u*Math.PI*1.2)*sg, hw = (.06 + .045*Math.pow(u,.6))*s, dir = [.66, sg*.23];
       const pl = Math.hypot(...dir);
       return {p:[x,y,z], w:[dir[0]/pl*hw*Math.cos(tw), dir[1]/pl*hw*Math.cos(tw), hw*Math.sin(tw)]}; }, C.rib, V, .011*s, .085*s, .14);
   }
   // the knot: a short band wrapped round the gathered middle
-  G.sphere(0,0,z0,.07*s,.08*s,.06*s,lin('#8e1a26'),V,null,12,8);
-  band(G, 28, u => { const a = u*Math.PI*2; return {p:[Math.sin(a)*.075*s, 0, z0 + Math.cos(a)*.06*s], w:[0,.085*s,0]}; }, C.rib, V, .014*s);
-  band(G, 20, u => { const a = -.9 + u*1.8; return {p:[Math.sin(a)*.084*s, .01*s, z0 + Math.cos(a)*.068*s], w:[0,.03*s,.01*s]}; }, lin('#b02430'), V, .01*s);
+  const ks = Math.max(.08, 1 - loose);
+  G.sphere(0,-drop,z0,.07*s*ks,.08*s*ks,.06*s*ks,lin('#8e1a26'),V,null,12,8);
+  band(G, 28, u => { const a = u*Math.PI*2; return {p:[Math.sin(a)*.075*s*ks, -drop, z0 + Math.cos(a)*.06*s*ks], w:[0,.085*s*ks,0]}; }, C.rib, V, .014*s);
+  band(G, 20, u => { const a = -.9 + u*1.8; return {p:[Math.sin(a)*.084*s*ks, .01*s*ks-drop, z0 + Math.cos(a)*.068*s*ks], w:[0,.03*s*ks,.01*s*ks]}; }, lin('#b02430'), V, .01*s);
   return {G, cy};
 }
 
@@ -807,25 +812,53 @@ void main(){
     col+=vec3(.55,.65,1.)*u_moonVis*(.12*exp(-acos(clamp(md,-1.,1.))*28.)+.04*exp(-acos(clamp(md,-1.,1.))*7.));
     if(md>0.&&rr<1.){
       vec3 n=vec3(mp,sqrt(1.-rr*rr));
-      float l=max(dot(n,u_moonL),0.);
-      vec2 q=mp+.13*(vec2(fbm(mp*2.3+1.),fbm(mp*2.3+7.))-.5);   // warp so the maria have ragged, natural edges
+      vec2 sp=mp*(1.+.3*rr*rr);   // features crowd toward the limb, like a sphere
+      vec2 q=sp+.2*(vec2(fbm(sp*2.1+1.),fbm(sp*2.1+7.))-.5);
+      // maria: big dark basins with ragged edges
       float mar=0.;
-      mar+=smoothstep(.34,.05,length((q-vec2(-.30,.38))*vec2(1.,1.15)));
-      mar+=smoothstep(.22,.04,length(q-vec2(.10,.36)));
-      mar+=smoothstep(.26,.05,length((q-vec2(.27,.08))*vec2(1.,1.2)));
-      mar+=smoothstep(.14,.03,length((q-vec2(.66,.28))*vec2(1.,1.3)));
-      mar+=smoothstep(.44,.08,length((q-vec2(-.56,-.02))*vec2(1.,.72)));
-      mar+=smoothstep(.18,.04,length(q-vec2(.33,-.24)));
-      mar+=smoothstep(.2,.04,length(q-vec2(-.26,-.36)));
-      mar=clamp(mar,0.,1.)*(.7+.6*fbm(mp*4.5+2.));
-      float cr=fbm(mp*9.+9.)*.6+fbm(mp*22.+3.)*.4;
-      float ty=length(mp-vec2(-.14,-.72));
-      float rays=smoothstep(.75,.0,ty)*pow(abs(sin(atan(mp.y+.72,mp.x+.14)*7.)),12.)*.05;
-      vec3 alb=vec3(.9,.89,.86)*(1.-.3*clamp(mar,0.,1.))*(.9+.16*cr)+vec3(.05)*smoothstep(.05,.0,ty)+rays;
-      float limb=.93+.07*n.z;
-      vec3 mc=alb*(.8*limb)+vec3(.015,.02,.03);
-      col=mix(col,mc,smoothstep(1.,.96,rr)*u_moonVis);
+      mar+=smoothstep(.26,.04,length(q-vec2(.14,.46)));
+      mar+=smoothstep(.24,.04,length(q-vec2(.44,.30)));
+      mar+=smoothstep(.18,.03,length(q-vec2(.58,.04)));
+      mar+=smoothstep(.36,.06,length((q-vec2(-.46,.14))*vec2(1.,.85)));
+      mar+=smoothstep(.24,.04,length(q-vec2(-.56,-.28)));
+      mar+=smoothstep(.2,.04,length(q-vec2(-.18,.32)));
+      mar+=smoothstep(.2,.04,length(q-vec2(-.04,-.06)));
+      mar+=smoothstep(.16,.03,length(q-vec2(-.22,-.46)));
+      mar+=smoothstep(.14,.03,length(q-vec2(.22,-.1)));
+      mar=clamp(mar,0.,1.)*smoothstep(.15,.5,fbm(sp*3.5+2.)+.3);
+      // highlands: bright, finely mottled
+      float hl=.86+.18*fbm(sp*11.+4.)+.08*(noise(sp*40.)-.5);
+      vec3 alb=vec3(.93,.92,.9)*hl;
+      alb=mix(alb,vec3(.34,.35,.37)*(.85+.3*fbm(sp*9.+6.)),mar*.92);
+      // craters at three sizes: a darker bowl, a bright rim, lit on one wall
+      vec2 L2=normalize(vec2(-.6,.45));
+      float cr=0.;
+      for(int k=0;k<3;k++){
+        float sc=k==0?4.5:(k==1?9.:17.), dens=k==0?.3:(k==1?.36:.45), wgt=k==0?.8:(k==1?.55:.35);
+        vec2 g=sp*sc+float(k)*7.3, i=floor(g), f=fract(g);
+        for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++){
+          vec2 c=i+vec2(x,y);
+          if(hash(c+float(k)*13.1)>dens) continue;
+          vec2 o=vec2(x,y)+.2+.6*vec2(hash(c+3.1),hash(c+5.7))-f;
+          float r=.16+.24*hash(c+8.3), d=length(o)/r;
+          float bowl=smoothstep(1.05,.3,d), rim=exp(-pow((d-1.05)*5.,2.));
+          float wall=dot(o/max(length(o),1e-4),L2)*smoothstep(1.05,.55,d)*step(.2,d);
+          cr+=wgt*(-.22*bowl+.38*rim+.3*wall);
+        }
+      }
+      alb*=1.+cr*(1.-.35*mar);
+      // two young rayed craters with bright splash
+      vec2 c1=sp-vec2(.36,-.56), c2=sp-vec2(-.44,-.08);
+      float d1=length(c1), d2=length(c2);
+      float ray=pow(noise(vec2(atan(c1.y,c1.x)*11.,1.7)),5.)*exp(-d1*2.2)*smoothstep(.05,.12,d1)
+               +pow(noise(vec2(atan(c2.y,c2.x)*9.,6.3)),5.)*exp(-d2*3.)*smoothstep(.04,.1,d2)*.7;
+      alb+=vec3(.55)*ray+vec3(.5)*smoothstep(.07,.03,d1)+vec3(.35)*smoothstep(.05,.02,d2);
+      alb-=vec3(.25)*smoothstep(.025,.0,d1);
+      float limb=.9+.1*n.z;
+      vec3 mc=alb*(.82*limb)+vec3(.012,.015,.022);
+      col=mix(col,mc,smoothstep(1.,.965,rr)*u_moonVis);
     }
+    col+=vec3(.75,.8,.95)*u_moonVis*.09*exp(-max(acos(clamp(md,-1.,1.))/mr-1.,0.)*3.)*smoothstep(.97,1.,rr);
   }
   // sun
   float sa=acos(clamp(dot(rd,u_sunSky),-1.,1.));
@@ -876,7 +909,7 @@ function upload(G){
   gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
   const st = 15*4; [[0,3,0],[1,3,3],[2,3,6],[3,4,9],[4,2,13]].forEach(([l,n,o]) => { gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l,n,gl.FLOAT,false,st,o*4); });
   gl.bindVertexArray(null);
-  return {vao, count: data.length/15, model: M4.id()};
+  return {vao, buf, count: data.length/15, model: M4.id()};
 }
 const skyVAO = (() => { const v = gl.createVertexArray(), b = gl.createBuffer(); gl.bindVertexArray(v); gl.bindBuffer(gl.ARRAY_BUFFER,b); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0); gl.bindVertexArray(null); return v; })();
 
@@ -928,7 +961,7 @@ WINS.forEach(W => {
   const zf = door ? 0.0 : 0.13;
   W.L = {mesh: leaf, hinge:[W.cx-W.w/2-.03, yb, zf]};
   W.R = {mesh: leafR, hinge:[W.cx+W.w/2+.03, yb, zf]};
-  const rb = ribbonGeo(W); W.rib = {mesh: upload(rb.G), c:[W.cx, rb.cy, zf + (door ? .0 : .0)]};
+  const rb = ribbonGeo(W); W.rib = {mesh: upload(rb.G), c:[W.cx, rb.cy, zf + (door ? .0 : .0)], k: 0};
   W.state = opened[W.d] != null ? 1 : 0; W.t0 = -1e9;
   if (!door) { const g = new Geo(), sz = .86;
     g.quad([-sz/2,-sz/2,0],[sz/2,-sz/2,0],[sz/2,sz/2,0],[-sz/2,sz/2,0],[0,0,1],C.white,MAT(18),[[0,0],[1,0],[1,1],[0,1]]); W.num = upload(g); }
@@ -1034,11 +1067,11 @@ canvas.addEventListener('click', e => {
   const W = hitWindow(e.clientX, e.clientY); if (!W) return;
   if (opened[W.d] != null) return showCard(W.d, 0);
   if (W.kind === 'door') {
-    if (isNewYear()) return openSlot(W, DOOR, 2600);
+    if (isNewYear()) return openSlot(W, DOOR, 3400);
     W.shake = NOW; return toast('这扇大门会在新年零点打开');
   }
   if (!canOpen()) { W.shake = NOW; return toast(lockedMsg()); }
-  openSlot(W, W.n, 2600);
+  openSlot(W, W.n, 3400);
 });
 const modal = document.getElementById('modal');
 function showCard(slot, delay){
@@ -1086,7 +1119,7 @@ function updateDyn(t){
   WINS.forEach(W => {
     let rp, sp;
     if (W.state === 1) { rp = 1; sp = 1; }
-    else if (W.state === 2) { const e = t - W.t0; rp = clamp(e/0.9, 0, 1); sp = clamp((e-0.55)/1.7, 0, 1); if (sp < 1) anim = true; }
+    else if (W.state === 2) { const e = t - W.t0; rp = clamp(e/1.8, 0, 1); sp = clamp((e-1.45)/1.7, 0, 1); if (sp < 1) anim = true; }
     else { rp = 0; sp = 0; }
     const door = W.kind === 'door', maxA = door ? 1.75 : 2.98;
     const ang = ease(sp) * maxA;
@@ -1097,12 +1130,16 @@ function updateDyn(t){
     // ribbon: slips down, tumbles and vanishes
     const c = W.rib.c, ready = W.state === 0 && (W.kind === 'door' ? isNewYear() : canOpen());
     const pulse = ready ? 1 + .02*Math.sin(t*2.6) : 1;
-    const fall = rp*rp, sc = Math.max(1e-3, (1 - sstep(.55, 1, rp)) * pulse);
-    W.rib.mesh.model = M4.chain(M4.T(c[0]+shx, c[1] - fall*2.2, c[2] + rp*.5), M4.RZ(rp*1.1), M4.RX(-rp*.8), M4.S(sc,sc,sc));
+    if (W.state === 2 && rp < 1 && Math.abs(rp - W.rib.k) > 1e-3) {   // rebuild the bow as it unties
+      W.rib.k = rp; const g = ribbonGeo(W, ease(rp)).G;
+      gl.bindBuffer(gl.ARRAY_BUFFER, W.rib.mesh.buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.d), gl.DYNAMIC_DRAW); W.rib.mesh.count = g.d.length/15;
+    }
+    const sc = W.state === 1 ? 1e-3 : Math.max(1e-3, (1 - sstep(.86, 1, rp)) * pulse);
+    W.rib.mesh.model = M4.chain(M4.T(c[0]+shx, c[1] - sstep(.86,1,rp)*.4, c[2]), M4.S(1,sc,1));
     if (W.num) { const a = W.state ? 1 : 0, ss = 2.05;
       W.numA = a; W.numM = M4.chain(M4.T(W.cx, W.yb + W.h*.5, -.2), M4.S(ss,ss,ss)); }
     // light inside
-    const op = W.state === 1 ? 1 : W.state === 2 ? sstep(.4, 2.2, t - W.t0) : 0;
+    const op = W.state === 1 ? 1 : W.state === 2 ? sstep(1.3, 3.1, t - W.t0) : 0;
     WGLOW[W.d] = ENV.st.n*.55 + op*(.35 + ENV.st.n*.55);
   });
   WGLOW[9] = ENV.st.n*.65;
@@ -1301,7 +1338,7 @@ function loop(){
   const ny = isNewYear();
   if (ny && !FW.on) updateStatus();
   FW.on = ny;
-  if (ny) { const D = WINS.find(W => W.kind === 'door'); if (D.state === 0 && opened[D.d] == null) openSlot(D, DOOR, 3000); }
+  if (ny) { const D = WINS.find(W => W.kind === 'door'); if (D.state === 0 && opened[D.d] == null) openSlot(D, DOOR, 3800); }
   updateFW(dt); updateClock(); updateGate();
   draw(t); drawSnow();
   requestAnimationFrame(loop);
